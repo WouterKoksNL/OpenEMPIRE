@@ -41,7 +41,6 @@ def define_investment_parameters(model, wacc):
     model.storENMaxInstalledCap = Param(model.StoragesOfNode, model.Period, default=0.0, mutable=True)
     model.storENMaxInstalledCapRaw = Param(model.StoragesOfNode, default=0.0, mutable=True)
 
-    # investment 
     model.genLifetime = Param(model.Generator, default=0.0, mutable=True)
     model.transmissionLifetime = Param(model.BidirectionalArc, default=40.0, mutable=True)
     model.storageLifetime = Param(model.Storage, default=0.0, mutable=True)
@@ -114,9 +113,6 @@ def prep_investment_parameters(
             for i in model.PeriodActive:
                 costperyear=(model.WACC/(1-((1+model.WACC)**(-model.genLifetime[g]))))*model.genCapitalCost[g,i]+model.genFixedOMCost[g,i]
                 costperperiod=costperyear*1000*(1-(1+model.discountrate)**-(min(value((len(model.PeriodActive)-i+1)*model.LeapYearsInvestment), value(model.genLifetime[g]))))/(1-(1/(1+model.discountrate)))
-                # Stian: Legacy code from Christian Skar's PhD, should not be in there
-                # if ('CCS',g) in model.GeneratorsOfTechnology:
-                #     costperperiod+=model.CCSCostTSFix*model.CCSRemFrac*model.genCO2TypeFactor[g]*(3.6/model.genEfficiency[g,i])
                 model.genInvCost[g,i]=costperperiod
 
         #Storage
