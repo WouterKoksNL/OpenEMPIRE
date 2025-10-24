@@ -39,22 +39,24 @@ def define_operational_parameters(
     ):
     # operational deterministic parameters 
     model.operationalDiscountrate = Param(mutable=True)
-    model.seasScale = Param(model.Season, mutable=True)
+    model.seasScale = Param(model.Season, initialize=1.0, mutable=True)
     model.lengthRegSeason = Param(initialize=operational_input_params.lengthRegSeason, mutable=False)
     model.lengthPeakSeason = Param(initialize=operational_input_params.lengthPeakSeason, mutable=False)
 
-    model.lineEfficiency = Param(model.DirectionalLink, mutable=True)
-    model.storageChargeEff = Param(model.Storage,  mutable=True)
-    model.storageDischargeEff = Param(model.Storage, mutable=True)
-    model.storageBleedEff = Param(model.Storage, mutable=True)
-    model.genRampUpCap = Param(model.ThermalGenerators, mutable=True)
-    model.storageDiscToCharRatio = Param(model.Storage, mutable=True) #NB! Hard-coded
-    model.genCO2TypeFactor = Param(model.Generator, mutable=True)
-    model.genVariableOMCost = Param(model.Generator, mutable=True)
-    model.CCSRemFrac = Param(mutable=True)
-    model.maxHydroNode = Param(model.Node, mutable=True)
-    model.genCapAvailTypeRaw = Param(model.Generator, mutable=True)
-    model.storOperationalInit = Param(model.Storage, mutable=True) #Percentage of installed energy capacity initially
+    model.lineEfficiency = Param(model.DirectionalLink, default=0.97, mutable=True)
+    model.lineReactance   = Param(model.BidirectionalArc, default=0.0, mutable=True)
+    model.lineSusceptance = Param(model.BidirectionalArc, default=0.0, mutable=True)
+    model.storageChargeEff = Param(model.Storage, default=1.0, mutable=True)
+    model.storageDischargeEff = Param(model.Storage, default=1.0, mutable=True)
+    model.storageBleedEff = Param(model.Storage, default=1.0, mutable=True)
+    model.genRampUpCap = Param(model.ThermalGenerators, default=0.0, mutable=True)
+    model.storageDiscToCharRatio = Param(model.Storage, default=1.0, mutable=True) #NB! Hard-coded
+    model.genCO2TypeFactor = Param(model.Generator, default=0.0, mutable=True)
+    model.genVariableOMCost = Param(model.Generator, default=0.0, mutable=True)
+    model.CCSRemFrac = Param(initialize=0.9)
+    model.maxHydroNode = Param(model.Node, default=0.0, mutable=True)
+    model.genCapAvailTypeRaw = Param(model.Generator, default=1.0, mutable=True)
+    model.storOperationalInit = Param(model.Storage, default=0.0, mutable=True) #Percentage of installed energy capacity initially
     return 
 
 
@@ -99,24 +101,20 @@ def load_operational_parameters(model, data, dataset_dir, emission_cap_flag, out
         "genEfficiency",
         "genFuelCost",
     ],
-
     "Transmission": [
         "lineEfficiency",
     ],
-
     "Storage": [
         "storageBleedEff",
         "storageChargeEff",
         "storageDischargeEff",
         "storOperationalInit",
     ],
-
     "Node": [
         "nodeLostLoadCost",
         "sloadAnnualDemand",
         "maxHydroNode",
     ],
-
     "General": [
         "seasScale",
     ],
@@ -131,13 +129,14 @@ def load_operational_parameters(model, data, dataset_dir, emission_cap_flag, out
 
 
 def load_stochastic_input(model, data, dataset_dir, out_of_sample_flag=False, sample_file_path=None):
-    stochastic_variables = [
+    stochastic_variables = {
+        "Stochastic": [
             "sloadRaw",
             "genCapAvailStochRaw",
             "maxRegHydroGenRaw",
-        ]
+        ]}
     input_dir = (dataset_dir if not out_of_sample_flag else sample_file_path)
-    load_params(data, model, input_dir, component="Stochastic", param_name_list=stochastic_variables)
+    load_data_from_files(data, model, input_dir, param_name_list=stochastic_variables)
     return 
 
 
