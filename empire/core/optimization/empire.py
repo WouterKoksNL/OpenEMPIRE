@@ -105,7 +105,6 @@ def run_empire(
     logger.info("Building instance...")
 
     start = time.time()
-    breakpoint()
     instance: ConcreteModel = model.create_instance(data) #, report_timing=True)
     derive_stochastic_parameters(instance)
     instance.dual = Suffix(direction=Suffix.IMPORT) #Make sure the dual value is collected into solver results (if solver supplies dual information)
