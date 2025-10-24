@@ -136,7 +136,7 @@ def load_stochastic_input(model, data, dataset_dir, out_of_sample_flag=False, sa
             "maxRegHydroGenRaw",
         ]}
     input_dir = (dataset_dir if not out_of_sample_flag else sample_file_path)
-    load_data_from_files(data, model, input_dir, param_name_list=stochastic_variables)
+    load_data_from_files(data, model, input_dir, inputs=stochastic_variables)
     return 
 
 
