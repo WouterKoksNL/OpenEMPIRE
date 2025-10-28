@@ -30,13 +30,13 @@ logger = logging.getLogger(__name__)
 
 
 def create_subproblem_model(
-        run_config: EmpireRunConfiguration,
+        paths: PathsConfig,
         empire_config: EmpireConfiguration,
         operational_input_params: OperationalInputParams,
         ) -> None | float:
 
     prepare_temp_dir(empire_config.use_temporary_directory, temp_dir=empire_config.temporary_directory)
-    prepare_results_dir(run_config)
+    prepare_results_dir(paths)
     
     model = AbstractModel()
 
@@ -102,7 +102,7 @@ def create_subproblem_model(
 
 def load_data(
     model: AbstractModel, 
-    run_config: EmpireRunConfiguration, 
+    paths: PathsConfig, 
     empire_config: EmpireConfiguration, 
     period: int, 
     scenario: str, 
@@ -170,10 +170,10 @@ def create_subproblem_instance(model: AbstractModel, data: DataPortal) -> Concre
     return instance 
 
 
-def solve_subproblem(instance, solver_name, run_config):
+def solve_subproblem(instance, solver_name, paths):
 
     opt = set_solver(solver_name, logger, solver_method=SolvingMethods.DUAL_SIMPLEX)
-    _ = solve(instance, opt, run_config, logger)
+    _ = solve(instance, opt, paths, logger)
  
     return opt
 
@@ -216,16 +216,16 @@ def init_subproblem(
     period_active: int,
     scenario: str,
     empire_config: EmpireConfiguration,
-    run_config: EmpireRunConfiguration,
+    paths: PathsConfig,
     operational_input_params: OperationalInputParams,
     ):
     if not isinstance(scenario, str):
         raise ValueError("Subproblem routine only supports single scenarios.")
-    sp_model = create_subproblem_model(run_config, empire_config, operational_input_params)
-    data = load_data(sp_model, run_config, empire_config, period_active, scenario, out_of_sample_flag=False) # load all data except capacities
+    sp_model = create_subproblem_model(paths, empire_config, operational_input_params)
+    data = load_data(sp_model, paths, empire_config, period_active, scenario, out_of_sample_flag=False) # load all data except capacities
     load_capacity_values(sp_model, data, capacity_params, period_active) # load capacities into DataPortal
     sp_instance = create_subproblem_instance(sp_model, data)
-    node_unscaled_yearly_demand_ser = calc_total_raw_nodal_load(sp_instance.Node, period_active, operational_input_params, empire_config, run_config)
+    node_unscaled_yearly_demand_ser = calc_total_raw_nodal_load(sp_instance.Node, period_active, operational_input_params, paths)
     derive_stochastic_parameters(sp_instance, node_unscaled_yearly_demand_ser)
     return sp_instance
 
