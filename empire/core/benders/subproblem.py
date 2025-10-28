@@ -85,13 +85,6 @@ def create_subproblem_model(
     # constraint defintions
     define_operational_constraints(model, logger, empire_config.emission_cap_flag, include_hydro_node_limit_constraint_flag=False)
 
-    if empire_config.lopf_flag:
-        logger.info("LOPF constraints activated using method: %s", empire_config.lopf_method)
-        from .lopf_module import add_lopf_constraints
-        kw = {} if empire_config.lopf_kwargs is None else dict(empire_config.lopf_kwargs)
-        add_lopf_constraints(model, method=empire_config.lopf_method, **kw)
-
-
 
     define_objective(model, include_investment=False)
 
