@@ -4,7 +4,7 @@ import sys
 import logging
 from enum import Enum
 
-from empire.core.config import EmpireRunConfiguration
+from empire.core.paths import PathsConfig
 
 
 

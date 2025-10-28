@@ -1,11 +1,23 @@
+from dataclasses import dataclass
 from pyomo.environ import Constraint, Set, Var, value, BuildAction, Expression, AbstractModel, NonNegativeReals, Param, PercentFraction, ConcreteModel
 import logging
-from empire.core.config import OperationalInputParams
-from .loading_utils import load_set_directly, load_data_from_files, load_params
+from .loading_utils import load_set_directly, load_data_from_files, load_parameters
 import pandas as pd
 
 
 logger = logging.getLogger(__name__)
+
+@dataclass
+class OperationalInputParams: 
+    Operationalhour: list[int]
+    scenarios: list[str]
+    Season: list[str]
+    HoursOfSeason: list[tuple[str, int]]
+    FirstHoursOfRegSeason: list[int]
+    FirstHoursOfPeakSeason: list[int]
+    lengthRegSeason: int
+    lengthPeakSeason: int
+
 
 
 def define_operational_sets(model: AbstractModel, operational_input_params: OperationalInputParams):
@@ -68,7 +80,7 @@ def define_period_and_scenario_dependent_parameters(model: AbstractModel, emissi
     model.genMargCost = Param(model.Generator, model.Period, mutable=True)
     model.nodeLostLoadCost = Param(model.Node, model.Period, default=22000.0)
     model.genFuelCost = Param(model.Generator, model.Period, mutable=True)
-    model.CO2price = Param(model.Period, mutable=True)
+    model.CO2price = Param(model.Period, mutable=True, default=0.)
 
     model.CCSCostTSVariable = Param(model.Period, default=0.0, mutable=True)
     if emission_cap_flag:

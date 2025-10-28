@@ -237,14 +237,4 @@ class EmpireRunConfiguration:
         return cls(**config)
 
 
-@dataclass
-class OperationalInputParams: 
-    Operationalhour: list[int]
-    scenarios: list[str]
-    Season: list[str]
-    HoursOfSeason: list[tuple[str, int]]
-    FirstHoursOfRegSeason: list[int]
-    FirstHoursOfPeakSeason: list[int]
-    lengthRegSeason: int
-    lengthPeakSeason: int
 

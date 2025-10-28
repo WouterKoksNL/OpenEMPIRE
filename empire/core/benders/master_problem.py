@@ -25,14 +25,14 @@ from empire.core.optimization.shared_data import define_shared_sets, load_shared
 from empire.core.optimization.results import write_results, run_operational_model, write_operational_results, write_pre_solve
 from empire.core.optimization.solver import set_solver, solve, SolvingMethods
 from empire.core.optimization.helpers import pickle_instance, log_problem_statistics, prepare_results_dir, prepare_temp_dir
-from empire.core.config import EmpireRunConfiguration, EmpireConfiguration
+from empire.core.config import EmpireConfiguration
+from empire.core.paths import PathsConfig
 
-from empire.core.optimization.out_of_sample_functions import set_investments_as_parameters, load_optimized_investments
 logger = logging.getLogger(__name__)
 
 
 def create_master_problem_instance(
-        run_config: EmpireRunConfiguration, 
+        paths: PathsConfig, 
         empire_config: EmpireConfiguration, 
         # capacity_params: dict | None = None,
         # regularization_flag: bool = True,
@@ -42,7 +42,7 @@ def create_master_problem_instance(
         ) -> ConcreteModel:
 
     prepare_temp_dir(empire_config.use_temporary_directory, temp_dir=empire_config.temporary_directory)
-    prepare_results_dir(run_config)
+    prepare_results_dir(paths)
     
     model = AbstractModel()
     define_shared_sets(model, empire_config.north_sea_flag)
@@ -52,9 +52,9 @@ def create_master_problem_instance(
 
     #Load the data
     data = DataPortal()
-    load_shared_sets(model, data, run_config.tab_file_path, empire_config.north_sea_flag, load_period=True, periods_active=periods)
-    load_shared_parameters(model, data, run_config.tab_file_path)
-    load_investment_parameters(model, data, run_config.tab_file_path)
+    load_shared_sets(model, data, paths.dataset_path, empire_config.north_sea_flag, load_period=True, periods_active=periods)
+    load_shared_parameters(model, data, paths.dataset_path)
+    load_investment_parameters(model, data, paths.dataset_path)
 
     prep_investment_parameters(model) 
     define_investment_constraints(model, empire_config.north_sea_flag)
@@ -140,15 +140,15 @@ def create_master_problem_instance(
 
 def solve_master_problem(
         instance: ConcreteModel, 
-        empire_config: EmpireConfiguration, run_config: EmpireRunConfiguration, save_flag=False) -> float:
+        empire_config: EmpireConfiguration, paths: PathsConfig, save_flag=False) -> float:
     opt = set_solver(empire_config.optimization_solver, logger, solver_method=SolvingMethods.BARRIER)
-    _ = solve(instance, opt, run_config, logger)
+    _ = solve(instance, opt, paths, logger)
 
     if save_flag:
         if empire_config.pickle_instance_flag:
-            pickle_instance(instance, run_config.run_name, empire_config.use_temporary_directory, logger, empire_config.temporary_directory)
+            pickle_instance(instance, paths.run_name, empire_config.use_temporary_directory, logger, empire_config.temporary_directory)
 
-        write_results(instance, run_config.results_path, run_config.run_name, False, empire_config.emission_cap_flag, empire_config.print_iamc_flag, logger)
+        write_results(instance, paths.results_path, paths.run_name, False, empire_config.emission_cap_flag, empire_config.print_iamc_flag, logger)
 
     return value(instance.Obj)
 

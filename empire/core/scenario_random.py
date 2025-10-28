@@ -12,7 +12,8 @@ import pandas as pd
 from scipy.stats import kurtosis, skew, wasserstein_distance
 from sklearn.cluster import KMeans
 
-from empire.core.config import EmpireConfiguration, EmpireRunConfiguration
+from empire.core.config import EmpireConfiguration
+from empire.core.paths import PathsConfig
 from empire.core.constants import COPULA_TO_LABEL_MAPPING
 from empire.core.voronoi_sgr import compute_voronoi_clusters, extract_candidate_windows, make_voronoi_filter
 from empire.core.scenario_utils import make_datetime, year_season_filter, remove_time_index, season_month
@@ -430,7 +431,7 @@ def generate_random_scenario(
     """
     Method to generate random scenarios. Can also read existing samples if fix_sample is True.
 
-    :param run_config: Empire run configuration
+    :param paths: Empire run configuration
     :param empire_config: Empire configuration
     :param dict_countries: Dictionary mapping country names
     """

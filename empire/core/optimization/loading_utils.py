@@ -32,6 +32,7 @@ def load_parameter_from_df(
     model_param: Param,
     ) -> None:
     if df.empty:
+        print(f"No data to load for parameter {model_param.name}")
         logging.warning(f"No data to load for parameter {model_param.name}")
         return 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as tmpfile:

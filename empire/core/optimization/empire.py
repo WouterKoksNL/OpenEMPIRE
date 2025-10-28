@@ -13,14 +13,15 @@ from pyomo.environ import (
     Suffix
 )
 from .objective import define_objective
-from .operational import define_operational_sets, define_operational_constraints, prep_operational_parameters, derive_stochastic_parameters, define_operational_variables, define_operational_parameters, load_operational_parameters, define_stochastic_input, load_stochastic_input, define_period_and_scenario_dependent_parameters, load_operational_sets
+from .operational import OperationalInputParams, define_operational_sets, define_operational_constraints, prep_operational_parameters, derive_stochastic_parameters, define_operational_variables, define_operational_parameters, load_operational_parameters, define_stochastic_input, load_stochastic_input, define_period_and_scenario_dependent_parameters, load_operational_sets
 from .investment import define_investment_constraints, prep_investment_parameters, define_investment_variables, load_investment_parameters, define_investment_parameters
 from .shared_data import define_shared_sets, load_shared_sets, define_shared_parameters, load_shared_parameters
 from .out_of_sample_functions import set_investments_as_parameters, load_optimized_investments, set_out_of_sample_path
 from .results import write_results, run_operational_model, write_operational_results, write_pre_solve
 from .solver import set_solver, solve
 from .helpers import pickle_instance, log_problem_statistics, prepare_temp_dir, prepare_results_dir
-from empire.core.config import EmpireRunConfiguration, OperationalInputParams, EmpireConfiguration
+from empire.core.config import EmpireConfiguration
+from empire.core.paths import PathsConfig
 
 logger = logging.getLogger(__name__)
 
