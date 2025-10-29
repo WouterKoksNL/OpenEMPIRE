@@ -65,11 +65,11 @@ def set_solver(solver_name, logger, solver_method: SolvingMethods = SolvingMetho
 def solve(
         instance: ConcreteModel, 
         opt: SolverFactory, 
-        run_config: EmpireRunConfiguration, 
+        paths: PathsConfig, 
         logger: logging.Logger
         ):
     logger.info("Solving...")
-    results = opt.solve(instance, tee=True, logfile=run_config.results_path / f"logfile_{run_config.run_name}.log")#, keepfiles=True, symbolic_solver_labels=True)
+    results = opt.solve(instance, tee=True, logfile=paths.results_path / f"logfile_{paths.run_name}.log")#, keepfiles=True, symbolic_solver_labels=True)
     if results.solver.termination_condition == TerminationCondition.optimal:
         return results
     else:
