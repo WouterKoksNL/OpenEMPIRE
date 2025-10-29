@@ -14,7 +14,7 @@ from pyomo.environ import (
     Suffix
 )
 
-from empire.core.optimization.loading_utils import load_dict_into_dataportal, load_parameter, read_tab_file
+from empire.core.optimization.loading_utils import load_dict_into_dataportal, load_parameters
 from empire.core.optimization.objective import define_objective
 from empire.core.optimization.operational import OperationalInputParams, derive_stochastic_parameters, define_operational_sets, define_operational_constraints, prep_operational_parameters, define_operational_variables, define_operational_parameters, load_operational_parameters, define_stochastic_input, load_stochastic_input, define_period_and_scenario_dependent_parameters
 from empire.core.optimization.shared_data import define_shared_sets, load_shared_sets, define_shared_parameters, load_shared_parameters
@@ -111,54 +111,33 @@ def load_data(
     ) -> DataPortal:
 
     data = DataPortal()
-    load_shared_sets(model, data, run_config.tab_file_path, empire_config.north_sea_flag, load_period=False)
+    load_shared_sets(model, data, paths.dataset_path, empire_config.north_sea_flag, load_period=False)
     load_set_directly(data, model.Period, period)
     load_set_directly(data, model.PeriodActive, period)
     load_set_directly(data, model.Scenario, scenario)
 
-    load_shared_parameters(model, data, run_config.tab_file_path)
-    load_selected_operational_parameters(model, data, run_config.tab_file_path, empire_config.emission_cap_flag, out_of_sample_flag, period, scenario, sample_file_path=sample_file_path, scenario_data_path=run_config.scenario_data_path)
+    load_shared_parameters(model, data, paths.dataset_path)
+    
+    load_operational_parameters(
+        model,
+        data,
+        dataset_dir=paths.dataset_path,
+        emission_cap_flag=empire_config.emission_cap_flag,
+        filtering_flag=True,
+        period=period,
+        scenario=scenario
+    )
+
+    load_stochastic_input(
+        model,
+        data,
+        dataset_dir=paths.dataset_path,
+        filtering_flag=True,
+        period=period,
+        scenario=scenario,
+    )
 
     return data
-
-
-def load_selected_operational_parameters(model, data, tab_file_path, emission_cap_flag, out_of_sample_flag, period: int, scenario: str, sample_file_path=None, scenario_data_path=None) -> None:
-    # Load operational generator parameters
-    data.load(filename=str(tab_file_path / 'Generator_VariableOMCosts.tab'), param=model.genVariableOMCost, format="table")
-
-    data.load(filename=str(tab_file_path / 'Generator_CO2Content.tab'), param=model.genCO2TypeFactor, format="table")
-    data.load(filename=str(tab_file_path / 'Generator_GeneratorTypeAvailability.tab'), param=model.genCapAvailTypeRaw, format="table")
-    data.load(filename=str(tab_file_path / 'Generator_RampRate.tab'), param=model.genRampUpCap, format="table")
-
-    # Load operational transmission line parameters
-    data.load(filename=str(tab_file_path / 'Transmission_lineEfficiency.tab'), param=model.lineEfficiency, format="table")
-
-    # Storage parameters
-    data.load(filename=str(tab_file_path / 'Storage_StorageBleedEfficiency.tab'), param=model.storageBleedEff, format="table")
-    data.load(filename=str(tab_file_path / 'Storage_StorageChargeEff.tab'), param=model.storageChargeEff, format="table")
-    data.load(filename=str(tab_file_path / 'Storage_StorageDischargeEff.tab'), param=model.storageDischargeEff, format="table")
-    data.load(filename=str(tab_file_path / 'Storage_StorageInitialEnergyLevel.tab'), param=model.storOperationalInit, format="table")
-    data.load(filename=str(tab_file_path / 'Node_HydroGenMaxAnnualProduction.tab'), param=model.maxHydroNode, format="table")
-    data.load(filename=str(tab_file_path / 'General_seasonScale.tab'), param=model.seasScale, format="table")
-
-
-    load_parameter(data, tab_file_path / 'Generator_Efficiency.tab', model.genEfficiency, periods_to_load=[period], period_indnr=1)
-    load_parameter(data, tab_file_path / 'Node_ElectricAnnualDemand.tab', model.sloadAnnualDemand, periods_to_load=[period], period_indnr=1)
-    load_parameter(data, tab_file_path / 'Node_NodeLostLoadCost.tab', model.nodeLostLoadCost, periods_to_load=[period], period_indnr=1)
-    load_parameter(data, tab_file_path / 'Generator_FuelCosts.tab', model.genFuelCost, periods_to_load=[period], period_indnr=1)
-    load_parameter(data, tab_file_path / 'Generator_CCSCostTSVariable.tab', model.CCSCostTSVariable, periods_to_load=[period], period_indnr=0)
-    if emission_cap_flag:
-        load_parameter(data, tab_file_path / 'General_CO2Cap.tab', model.CO2cap, periods_to_load=[period], period_indnr=0)
-    else:
-        load_parameter(data, tab_file_path / 'General_CO2Price.tab', model.CO2price, periods_to_load=[period], period_indnr=0)
-
-    load_parameter(data, tab_file_path / 'Stochastic_HydroGenMaxSeasonalProduction.tab', model.maxRegHydroGenRaw, periods_to_load=[period], period_indnr=0, scenarios_to_load=[scenario], scenario_indnr=1)
-    load_parameter(data, tab_file_path / 'Stochastic_StochasticAvailability.tab', model.genCapAvailStochRaw, periods_to_load=[period], period_indnr=3, scenarios_to_load=[scenario], scenario_indnr=4)
-
-    load_parameter(data, tab_file_path / 'Stochastic_ElectricLoadRaw.tab', model.sloadRaw, periods_to_load=[period], period_indnr=0, scenarios_to_load=[scenario], scenario_indnr=1)
-
-    return 
-
 
 
 def create_subproblem_instance(model: AbstractModel, data: DataPortal) -> ConcreteModel:
@@ -187,7 +166,7 @@ def load_capacity_values(
     """Load capacity values from the MP into the DataPortal for the subproblem."""
 
     for param_name, capacities in capacity_params.items():
-        filtered_capacities = filter_data(
+        filtered_capacities = filter_dict(
             capacities,
             periods_to_load=[period_active],
             period_indnr=-1,  # period index is always last in the tuple
@@ -202,7 +181,7 @@ def update_capacity_values(
     ) -> None:
     """Update capacity values in the subproblem instance from the MP capacities."""
     for param_name, capacities in capacity_params.items():
-        filtered_capacities = filter_data(
+        filtered_capacities = filter_dict(
             capacities,
             periods_to_load=[period_active],
             period_indnr=-1,
