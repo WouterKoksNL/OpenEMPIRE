@@ -23,8 +23,8 @@ class EmpireConfiguration:
         discount_rate: float,
         wacc: float,
         optimization_solver: str,
-        use_scenario_generation: bool,
-        use_fixed_sample: bool,
+        fixed_sampling_key_flag: bool,
+        fixed_csv_sample_flag: bool,
         filter_make: bool,
         filter_use: bool,
         n_cluster: int,
@@ -66,7 +66,6 @@ class EmpireConfiguration:
         :param discount_rate: Rate used to discount future cash flows to present value.
         :param wacc: The Weighted Average Cost of Capital (WACC).
         :param optimization_solver: Mathematical solver used for optimization tasks. Options: “Xpress”, “Gurobi”, “CPLEX”.
-        :param use_scenario_generation: If true, new operational scenarios will be generated. NB! If false, .tab-files or sampling key must be manually added to the ‘ScenarioData’-folder in the version.
         :param use_fixed_sample: If true, operational scenarios will be generated according to a fixed sampling key located in the ‘Scenario Data’ folder to ensure the same operational scenarios are generated.
         :param filter_make:
         :param filter_use:
@@ -94,8 +93,8 @@ class EmpireConfiguration:
         self.discount_rate = discount_rate
         self.wacc = wacc
         self.optimization_solver = optimization_solver
-        self.use_scenario_generation = use_scenario_generation
-        self.use_fixed_sample = use_fixed_sample
+        self.fixed_sampling_key_flag = fixed_sampling_key_flag
+        self.fixed_csv_sample_flag = fixed_csv_sample_flag
         self.filter_make = filter_make
         self.filter_use = filter_use
         self.copulas_to_use = copulas_to_use
