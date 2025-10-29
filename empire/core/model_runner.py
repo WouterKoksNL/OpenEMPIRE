@@ -106,7 +106,6 @@ def run_empire_model(
 
 
     with open(run_config.empire_path / "config/countries.json", "r", encoding="utf-8") as file:
-        dict_countries = json.load(file)
 
     logger.info("++++++++")
     logger.info("+EMPIRE+")
