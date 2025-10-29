@@ -81,11 +81,11 @@ for i in range(start_instance, start_instance + num_instances):
     if (run_path / "Output/results_objective.csv").exists() and not args.force:
         raise ValueError("There already exists results for this analysis run.")
 
-    run_config = setup_run_paths(version=dataset, empire_config=empire_config, run_path=run_path)
-    logger = get_empire_logger(run_config=run_config)
+    paths = setup_run_paths(version=dataset, empire_config=empire_config, run_path=run_path)
+    logger = get_empire_logger(paths=paths)
     logger.info("Running EMPIRE Model")
 
     ## Run empire model
     run_empire_model(
-        empire_config=empire_config, run_config=run_config, data_managers=[], test_run=False
+        empire_config=empire_config, paths=paths, data_managers=[], test_run=False
     )

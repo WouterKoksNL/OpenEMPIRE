@@ -52,7 +52,7 @@ with open(original_file_path, "r") as f:
 rows = run_table.strip().split("\n")
 
 # Extract run configurations from each row
-run_configurations = []
+settings = []
 for row in rows[1:]:  # Skip the header row
     columns = row.split()
     method = columns[2]
@@ -60,14 +60,14 @@ for row in rows[1:]:  # Skip the header row
     start_instance = int(columns[6])
     end_instance = int(columns[7])
     num_instances = end_instance - start_instance + 1
-    run_configurations.append({"method": method, "num_scenarios": num_scenarios, "start_instance": start_instance, "num_instances": num_instances})
+    settings.append({"method": method, "num_scenarios": num_scenarios, "start_instance": start_instance, "num_instances": num_instances})
 
 # Read the original file content
 with open(original_file_path, "r") as f:
     original_content = f.read()
 
 # Iterate over each run configuration
-for i, config in enumerate(run_configurations, start=1):
+for i, config in enumerate(settings, start=1):
     # Create a copy of the original content
     new_content = original_content
 

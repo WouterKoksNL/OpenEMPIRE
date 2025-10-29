@@ -64,8 +64,8 @@ run_path = Path.cwd() / "Results/run_analysis/ncc{ncc}_na{na}_w{w}_wog{wog}_p{p}
 if (run_path / "Output/results_objective.csv").exists():
     raise ValueError("There already exists results for this analysis run.")
 
-run_config = setup_run_paths(version=version, empire_config=empire_config, run_path=run_path)
-logger = get_empire_logger(run_config=run_config)
+paths = setup_run_paths(version=version, empire_config=empire_config, run_path=run_path)
+logger = get_empire_logger(paths=paths)
 
 logger.info("Running analysis with:")
 logger.info(f"Nuclear capital cost: {capital_cost}")
@@ -74,7 +74,7 @@ logger.info(f"Max installed onshore wind per elspot area in Norway: {max_onshore
 logger.info(f"Max installed grounded offshore wind per elspot area in Norway: {max_offshore_wind_grounded_norway}")
 logger.info(f"Dataset version: {version}")
 
-client = EmpireInputClient(dataset_path=run_config.dataset_path)
+client = EmpireInputClient(dataset_path=paths.dataset_path)
 
 data_managers = [
     AvailabilityManager(client=client, generator_technology="Nuclear", availability=nuclear_availability),
@@ -135,5 +135,5 @@ if max_offshore_wind_grounded_norway is not None:
 
 ## Run empire model
 run_empire_model(
-    empire_config=empire_config, run_config=run_config, data_managers=data_managers, test_run=args.test_run
+    empire_config=empire_config, paths=paths, data_managers=data_managers, test_run=args.test_run
 )

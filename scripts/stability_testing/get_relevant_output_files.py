@@ -41,13 +41,13 @@ if not os.path.exists(new_results_path):
     os.makedirs(new_results_path)
 
 for run_path in all_run_paths:
-    run_config = get_name_of_last_folder_in_path(run_path)
+    paths = get_name_of_last_folder_in_path(run_path)
 
-    print(run_config)
+    print(paths)
 
-    sgr_method = run_config.split("_")[0]
-    num_scenarios = run_config.split("_")[1][3:]
-    instance_num = run_config.split("_")[2]
+    sgr_method = paths.split("_")[0]
+    num_scenarios = paths.split("_")[1][3:]
+    instance_num = paths.split("_")[2]
 
     if not os.path.exists(new_results_path / sgr_method):
         os.makedirs(new_results_path / sgr_method)

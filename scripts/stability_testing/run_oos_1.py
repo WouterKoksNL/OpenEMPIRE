@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 import pandas as pd
-from empire.core.config import (EmpireConfiguration, EmpireRunConfiguration,
+from empire.core.config import (EmpireConfiguration, PathsConfig,
                                 read_config_file)
 from empire.core.model_runner import run_empire_model
 from empire.logger import get_empire_logger
@@ -95,7 +95,7 @@ for run_path in all_run_paths:
 
         # Set up run config manually to avoid duplicate input files and easier output struct
         run_name = get_name_of_last_folder_in_path(run_path) + f"_out-of-sample_{sample_tree}"
-        run_config = EmpireRunConfiguration(
+        paths = PathsConfig(
                         run_name=run_name,
                         dataset_path=dataset_path,
                         tab_path=tab_path,
@@ -104,13 +104,13 @@ for run_path in all_run_paths:
                         empire_path=empire_path
                     )
 
-        logger = get_empire_logger(run_config=run_config)
+        logger = get_empire_logger(paths=paths)
         logger.info("Running EMPIRE Model")
 
         ## Run empire model
         obj_value = run_empire_model(
             empire_config=empire_config,
-            run_config=run_config,
+            paths=paths,
             data_managers=[],
             test_run=False,
             OUT_OF_SAMPLE=True,
