@@ -493,7 +493,7 @@ class EmpireInputClient:
 
     def __init__(self, dataset_path: Path):
         self.dataset_path = dataset_path
-
+        
         self.sets = SetsClient(dataset_path / "Sets")
         self.generator = GeneratorClient(dataset_path / "Generator")
         self.nodes = NodeClient(dataset_path / "Node")

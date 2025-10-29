@@ -75,7 +75,6 @@ def load_shared_sets(model, data, dataset_dir, north_sea_flag, load_period=True,
     return 
 
 
-
 def define_shared_parameters(model, discountrate, LeapYearsInvestment):
     model.storagePowToEnergy = Param(model.DependentStorage, default=1.0, mutable=True)
     model.discountrate = Param(initialize=discountrate) 

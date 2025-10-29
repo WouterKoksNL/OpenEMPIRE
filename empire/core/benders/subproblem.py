@@ -171,6 +171,7 @@ def load_capacity_values(
             periods_to_load=[period_active],
             period_indnr=-1,  # period index is always last in the tuple
         )
+ 
         load_dict_into_dataportal(data, getattr(sp_model, param_name), filtered_capacities)
     return
 
