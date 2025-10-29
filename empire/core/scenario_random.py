@@ -441,7 +441,7 @@ def generate_random_scenario(
     len_of_regular_season = empire_config.length_of_regular_season
     len_peak_season = empire_config.len_peak_season
     time_format = empire_config.time_format
-    fix_sample = empire_config.use_fixed_sample
+    fix_sample = empire_config.fixed_sampling_key_flag
 
     filter_make = empire_config.filter_make
     filter_use = empire_config.filter_use
