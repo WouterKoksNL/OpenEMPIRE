@@ -16,11 +16,11 @@ Nuclear,0.75
 Wave,0.33
 Geo,0.8
 Hydroregulated,1.0
-Hydrorun-of-the-river,0.0
+Hydrorun-of-the-river,1.0
 Bio,0.8
-Windonshore,0.0
-Windoffshore,0.0
-Solar,0.0
+Windonshore,1.0
+Windoffshore,1.0
+Solar,1.0
 Bio10cofiringCCS,0.8
 LigniteCCSsup,0.8
 CoalCCS,0.8
