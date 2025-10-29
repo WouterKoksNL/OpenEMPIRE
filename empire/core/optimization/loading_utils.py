@@ -201,3 +201,76 @@ def load_data_from_files(data: DataPortal, model: AbstractModel, input_data_dir:
             load_sets(data, model, input_data_dir, file_list)
         else:
             load_params(data, model, input_data_dir, file_list, component)
+
+
+
+
+def read_csv_file(file_path: Path) -> dict:
+    """
+    Reads a tab-separated file with the first columns as indices
+    and the last column as the value.
+    Returns a dict with index tuples as keys.
+    """
+    df = pd.read_csv(file_path)
+    # Assume last column is value
+    value_col = df.columns[-1]
+    index_cols = df.columns[:-1]
+    
+    data = {}
+    for _, row in df.iterrows():
+        idx = tuple(row[col] for col in index_cols)
+        data[idx] = row[value_col]
+    return data
+
+
+def filter_data(
+    raw_data: dict[tuple, float],
+    periods_to_load: list[int] | None = None,
+    period_indnr: int | None = None,
+    scenarios_to_load: list[str] | None = None,
+    scenario_indnr: int | None = None,
+) -> dict[tuple | str | int | float, float]:
+    """
+    Filters raw_data dict of indexed Param values by allowed values on specified periods and scenarios.
+    """
+    dim_indices: dict[int, list] = {}
+    if periods_to_load is not None and period_indnr is not None:
+        dim_indices[period_indnr] = periods_to_load
+    if scenarios_to_load is not None and scenario_indnr is not None:
+        dim_indices[scenario_indnr] = scenarios_to_load
+    return _filter_param_by_dims(
+        raw_data,
+        dim_indices=dim_indices
+    )
+
+
+def load_csv_parameter(
+    data: DataPortal,
+    csv_file_path: Path,
+    param_component: Param,
+    periods_to_load: list[int] | None = None,
+    period_indnr: int | None = None,
+    scenarios_to_load: list[str] | None = None,
+    scenario_indnr: int | None = None,
+):
+    """
+    Loads a parameter for an abstract model.
+    Only loads entries for the specified periods and scenarios.
+    If no periods or scenarios are specified (periods_to_load is None and scenarios_to_load is None), loads all data.
+    """
+    raw_data = read_csv_file(csv_file_path)
+    if not raw_data:
+        raise ValueError(f"No data found in file {csv_file_path} for parameter {param_component.name}")
+    if periods_to_load is None and scenarios_to_load is None:
+        filtered_data = raw_data
+    else:
+        filtered_data = filter_data(
+            raw_data,
+            periods_to_load=periods_to_load,
+            period_indnr=period_indnr,
+            scenarios_to_load=scenarios_to_load,
+            scenario_indnr=scenario_indnr,
+        )
+
+    load_dict_into_dataportal(data, param_component, filtered_data)
+    return 

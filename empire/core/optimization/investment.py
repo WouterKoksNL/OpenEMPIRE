@@ -1,5 +1,7 @@
 from pyomo.environ import AbstractModel, Constraint, value, BuildAction, Param, Var, NonNegativeReals
-from .loading_utils import load_data_from_files
+from .loading_utils import load_parameters
+
+
 def define_investment_parameters(model, wacc):
     
     #Cost
@@ -84,7 +86,13 @@ def load_investment_parameters(model, data, dataset_dir) -> None:
         "storageLifetime",
     ],
     }
-    load_data_from_files(data, model, dataset_dir, inputs=investment_parameters)
+    for component, param_list in investment_parameters.items():
+        load_parameters(
+            data,
+            full_path=dataset_dir / component,
+            param_name_list=param_list,
+            model=model,
+        )
     return 
 
 
