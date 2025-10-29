@@ -35,7 +35,7 @@ def load_optimized_investments(model, data, result_file_path, set_only_capacitie
             "storPWInvCap",
             "storENInvCap",
         ]
-    load_params(model, data, result_file_path, investment_params)
+    load_params(data, model, result_file_path, investment_params, component="")  # component is "" since there is no subfolder in the output folder.
     return 
 
 
