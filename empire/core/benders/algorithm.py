@@ -101,9 +101,11 @@ def run_benders(
             return mp_objective, mp_instance
         last_mp_obj = mp_objective
 
+    for i, mp_obj in enumerate(mp_objs):
+        print(f"Iteration {i+1}: Master problem objective = {mp_obj:.6e}")
     logger.info("Benders did not converge.")
     print("Benders did not converge.")
-    return None, None
+    return mp_objective, mp_instance
 
 
 
