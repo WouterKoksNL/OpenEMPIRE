@@ -102,7 +102,16 @@ def load_operational_sets(model, data, scenarios):
     load_set_directly(data, model.Scenario, scenarios)
     return 
 
-def load_operational_parameters(model, data, dataset_dir, emission_cap_flag, out_of_sample_flag, sample_file_path=None, scenario_data_path=None):
+def load_operational_parameters(
+        model, 
+        data, 
+        dataset_dir, 
+        emission_cap_flag, 
+        filtering_flag=False, 
+        period=None, 
+        scenario=None,
+        ) -> None:
+    
     input_parameters = {
     "Generator": [
         "genVariableOMCost",
@@ -135,20 +144,49 @@ def load_operational_parameters(model, data, dataset_dir, emission_cap_flag, out
         input_parameters["General"].append("CO2cap")
     else:
         input_parameters["General"].append("CO2price")
-    load_data_from_files(data, model, dataset_dir, inputs=input_parameters)
+    
+    for component, param_list in input_parameters.items():
+        load_parameters(
+            data,
+            full_path=dataset_dir / component,
+            param_name_list=param_list,
+            model=model,
+            filtering_flag=filtering_flag,
+            period=period,
+            scenario=scenario,
+        )
+
 
     return 
 
 
-def load_stochastic_input(model, data, dataset_dir, out_of_sample_flag=False, sample_file_path=None):
-    stochastic_variables = {
-        "Stochastic": [
+def load_stochastic_input(
+        model, 
+        data, 
+        dataset_dir, 
+        out_of_sample_flag=False, 
+        sample_file_path=None,
+        filtering_flag=False,
+        period=None,
+        scenario=None,
+        ) -> None:
+    
+    stochastic_variables = [
             "sloadRaw",
             "genCapAvailStochRaw",
             "maxRegHydroGenRaw",
-        ]}
-    input_dir = (dataset_dir if not out_of_sample_flag else sample_file_path)
-    load_data_from_files(data, model, input_dir, inputs=stochastic_variables)
+        ]
+    input_dir = (dataset_dir / "Stochastic" if not out_of_sample_flag else sample_file_path)
+    load_parameters(
+            data,
+            full_path=input_dir,
+            param_name_list=stochastic_variables,
+            model=model,
+            filtering_flag=filtering_flag,
+            period=period,
+            scenario=scenario,
+        )
+
     return 
 
 
