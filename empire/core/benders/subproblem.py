@@ -209,22 +209,36 @@ def init_subproblem(
     return sp_instance
 
 
-def calc_total_raw_nodal_load(nodes: Set, period_active: int, operational_params: OperationalInputParams, empire_config: EmpireConfiguration, run_config: EmpireRunConfiguration) -> pd.Series:
-    demand_data = read_tab_file(run_config.tab_file_path / 'Stochastic_ElectricLoadRaw.tab')
-    demand_data_ser = pd.Series(demand_data)
-    all_indices = [(period_active, w, n, h) for w in operational_params.scenarios for n in nodes for (s, h) in operational_params.HoursOfSeason]
-    demand_data_ser = demand_data_ser.reindex(pd.MultiIndex.from_tuples(all_indices, names=['PeriodActive', 'Scenario', 'Node', 'Hour']), fill_value=0.0)
-    # demand_data_ser_total = demand_data_ser.groupby(['Period', 'Node']).sum()
-    sceProbab = 1 / len(operational_params.scenarios)  # Needs to be updated if non-uniform probabilities are used.
-    seasScale = read_tab_file(run_config.tab_file_path / 'General_seasonScale.tab')
-    node_unscaled_yearly_demand_ser = pd.Series(0.0, index=nodes)
+def calc_total_raw_nodal_load(
+        nodes: Set, 
+        period_active: int, 
+        operational_params: OperationalInputParams, 
+        paths: PathsConfig,
+        ) -> pd.Series:
+    demand_df = get_df(paths.dataset_path / 'Stochastic', 'sloadRaw')
+    demand_df = filter_df(demand_df, period=period_active)
 
-    for n in nodes:
-        # Compute probability-weighted raw demand
-            node_unscaled_yearly_demand_ser.loc[n] = sum(
-                sceProbab * seasScale[(s,)] * demand_data_ser[period_active, w, n, h]
-                for (s, h) in operational_params.HoursOfSeason
-                # if h < cutoff  # adjust if you want peak hours included
-                for w in operational_params.scenarios
-            )
+    seasScale = get_df(paths.dataset_path / 'General', 'seasScale')
+    season_scale_mapping = seasScale.set_index('Season')["seasonScale"]
+    hour_season_mapping = pd.Series(
+        {hour: season for season, hour in operational_params.HoursOfSeason}
+    )
+
+    demand_df['Season'] = demand_df['Operationalhour'].map(hour_season_mapping)
+    demand_df['Scale'] = demand_df['Season'].map(season_scale_mapping)
+
+    # Scenario probability
+    sceProbab = 1 / len(operational_params.scenarios)
+
+    demand_df["weighted_load"] = sceProbab * demand_df["ElectricLoadRaw_in_MW"] * demand_df["Scale"]
+
+
+    # Compute weighted yearly demand per node
+
+    node_unscaled_yearly_demand_ser = (
+        demand_df.groupby("Node")["weighted_load"].sum()
+    .reindex(nodes, fill_value=0.0)
+    )
+
     return node_unscaled_yearly_demand_ser
+
