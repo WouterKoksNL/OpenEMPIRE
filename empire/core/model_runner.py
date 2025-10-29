@@ -64,9 +64,24 @@ def define_operational_input_params(empire_config: EmpireConfiguration):
     return operational_input_params
 
 
+def stochastic_input_setup(empire_config: EmpireConfiguration, paths: PathsConfig):
+        if empire_config.fixed_sampling_key_flag:
+            assert (paths.scenario_data_path / "sampling_key.csv").exists(), "Missing 'sampling_key.csv' in ScenarioData folder."
+        elif empire_config.fixed_csv_sample_flag:
+            raise NotImplementedError("Fixed CSV sampling using .csv input data files not yet implemented.")
+        else:
+            stochastic_data_path = paths.dataset_path / "Stochastic"
+            dict_countries = load_json(paths.empire_path / "config/countries.json")
+            generate_random_scenario(
+                empire_config=empire_config,
+                dict_countries=dict_countries,
+                scenario_data_path=paths.scenario_data_path,
+                output_path=stochastic_data_path,
+            )
+
 def run_empire_model(
     empire_config: EmpireConfiguration,
-    run_config: EmpireRunConfiguration,
+    paths: PathsConfig,
     data_managers: list[IDataManager],
     test_run: bool,
     OUT_OF_SAMPLE: bool = False, 
@@ -96,36 +111,20 @@ def run_empire_model(
     logger.info("+EMPIRE+")
     logger.info("++++++++")
     logger.info("Solver: %s", empire_config.optimization_solver)
-    logger.info("Scenario Generation: %s", str(empire_config.use_scenario_generation))
+    logger.info("Fixed sample: %s", str(empire_config.fixed_sampling_key_flag))
     logger.info("++++++++")
-    logger.info("ID: %s", run_config.run_name)
+    logger.info("ID: %s", paths.run_name)
     logger.info("++++++++")
 
-    if empire_config.use_scenario_generation:
-        if empire_config.use_fixed_sample and not (run_config.scenario_data_path / "sampling_key.csv").exists():
-            raise ValueError("Missing 'sampling_key.csv' in ScenarioData folder.")
-        else:
-            stochastic_data_path = run_config.dataset_path / "Stochastic"
-            generate_random_scenario(
-                empire_config=empire_config,
-                dict_countries=dict_countries,
-                scenario_data_path=run_config.scenario_data_path,
-                output_path=stochastic_data_path,
-            )
-
-    else:
-        if not empire_config.use_fixed_sample:
-            logger.warning(
-                "Both 'empire_config.use_scenario_generation' and 'use_fixed_sample' are set to False. "
-                "Existing scenarios will be used, thus 'use_fixed_sample' should be True."
-            )
+    
+    stochastic_input_setup(empire_config, paths)
 
 
     obj_value = None
     if not test_run:
         if not empire_config.benders_flag:
             obj_value, _ = run_empire(
-                run_config=run_config,
+                paths=paths,
                 empire_config=empire_config,
                 periods_active=periods_active,
                 operational_input_params=operational_input_params,
@@ -134,7 +133,7 @@ def run_empire_model(
             )
         else:
             obj_value, _ = run_benders(
-                run_config=run_config,
+                paths=paths,
                 empire_config=empire_config,
                 operational_input_params=operational_input_params,
                 periods_active=periods_active,
@@ -142,58 +141,12 @@ def run_empire_model(
 
 
         
-    config_path = run_config.dataset_path / "config.txt"
+    config_path = paths.dataset_path / "config.txt"
     logger.info("Writing config to: %s", config_path)
     with open(config_path, "w", encoding="utf-8") as file:
         json.dump(empire_config.to_dict(), file, ensure_ascii=False, indent=4)
     return obj_value
 
-def setup_run_paths(
-    version: str,
-    empire_config: EmpireConfiguration,
-    run_path: Path,
-    empire_path: Path = Path.cwd(),
-    input_data_dir: str = "input_data",
-) -> EmpireRunConfiguration:
-    """
-    Setup run paths for Empire.
-
-    :param version: dataset version.
-    :param empire_config: Empire configuration.
-    :param run_path: Path containing input and output to the empire run.
-    :param empire_path: Path to empire project, optional.
-    :return: Empire run configuration.
-    """
-
-    # Original dataset
-    base_dataset = empire_path / input_data_dir / version
-
-    # Input folders
-    run_name = get_run_name(empire_config=empire_config, version=version)
-    input_path = create_if_not_exist(run_path / "Input")
-    input_data_path = create_if_not_exist(input_path / "csv")
-    scenario_data_path = create_if_not_exist(input_data_path / "ScenarioData")
-
-
-    copy_csv_dataset(base_dataset, input_data_path)
-
-    copy_scenario_data(
-        base_dataset=base_dataset,
-        scenario_data_path=scenario_data_path,
-        use_scenario_generation=empire_config.use_scenario_generation,
-        use_fixed_sample=empire_config.use_fixed_sample,
-    )
-
-    # Output folders
-    results_path = create_if_not_exist(run_path / "Output")
-
-    return EmpireRunConfiguration(
-        run_name=run_name,
-        dataset_path=input_data_path,
-        scenario_data_path=scenario_data_path,
-        results_path=results_path,
-        empire_path=empire_path,
-    )
 
 
 def runner(data_managers):
@@ -209,15 +162,19 @@ def runner(data_managers):
         config = read_config_file(Path("config/myrun.yaml"))
 
     empire_config = EmpireConfiguration.from_dict(config=config)
+    paths = setup_run_paths(version=version, empire_config=empire_config)
 
-    run_config = setup_run_paths(version=version, empire_config=empire_config)
+    # Copy base dataset to inputs.input_data_path 
+    base_dataset = "input_data" / version
+    copy_csv_dataset(base_dataset, paths.dataset_path) 
+    
 
     ## Edit input data
     for manager in data_managers:
         manager.apply()
 
     ## Run empire
-    run_empire_model(empire_config=empire_config, run_config=run_config)
+    run_empire_model(empire_config=empire_config, paths=paths)
 
 
 if __name__ == "__main__":

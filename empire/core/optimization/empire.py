@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 def run_empire(
-        run_config: EmpireRunConfiguration,
+        paths: PathsConfig,
         empire_config: EmpireConfiguration,
         periods_active: list[int], 
         operational_input_params: OperationalInputParams,
@@ -37,7 +37,7 @@ def run_empire(
         ) -> tuple[float, ConcreteModel] | None:
 
     prepare_temp_dir(empire_config.use_temporary_directory, temp_dir=empire_config.temporary_directory)
-    prepare_results_dir(run_config)
+    prepare_results_dir(paths)
 
     model = AbstractModel()
     
@@ -55,19 +55,19 @@ def run_empire(
 
     # # Data loading
     data = DataPortal()
-    load_shared_sets(model, data, run_config.dataset_path, empire_config.north_sea_flag, load_period=True, periods_active=periods_active)
+    load_shared_sets(model, data, paths.dataset_path, empire_config.north_sea_flag, load_period=True, periods_active=periods_active)
     load_operational_sets(model, data, operational_input_params.scenarios)
-    load_shared_parameters(model, data, run_config.dataset_path)
-    load_operational_parameters(model, data, run_config.dataset_path, empire_config.emission_cap_flag, out_of_sample_flag, sample_file_path=sample_file_path, scenario_data_path=run_config.scenario_data_path)
-    load_stochastic_input(model, data, run_config.dataset_path, out_of_sample_flag, sample_file_path=sample_file_path)
-    load_investment_parameters(model, data, run_config.dataset_path)
+    load_shared_parameters(model, data, paths.dataset_path)
+    load_operational_parameters(model, data, paths.dataset_path, empire_config.emission_cap_flag)
+    load_stochastic_input(model, data, paths.dataset_path, out_of_sample_flag, sample_file_path=sample_file_path)
+    load_investment_parameters(model, data, paths.dataset_path)
 
     # Variable definitions
     if out_of_sample_flag:
         set_investments_as_parameters(model)
         
-        load_optimized_investments(model, data, run_config.results_path, set_only_capacities=True)
-        results_path = set_out_of_sample_path(run_config.results_path, sample_file_path)
+        load_optimized_investments(model, data, paths.results_path, set_only_capacities=True)
+        results_path = set_out_of_sample_path(paths.results_path, sample_file_path)
         logger.info("Out-of-sample results will be saved to: %s", results_path)
 
     else:
@@ -119,8 +119,8 @@ def run_empire(
         log_problem_statistics(instance, logger)
         write_pre_solve(
             instance,
-            run_config.results_path,
-            run_config.run_name,
+            paths.results_path,
+            paths.run_name,
             empire_config.write_in_lp_format,
             empire_config.use_temporary_directory,
             empire_config.temporary_directory,
@@ -129,24 +129,24 @@ def run_empire(
 
 
     opt = set_solver(empire_config.optimization_solver, logger)
-    _ = solve(instance, opt, run_config, logger)
-    post_process(instance, run_config, empire_config, opt, logger, out_of_sample_flag)  
+    _ = solve(instance, opt, paths, logger)
+    post_process(instance, paths, empire_config, opt, logger, out_of_sample_flag)  
     return value(instance.Obj), instance
 
 
-def post_process(instance, run_config, empire_config, opt, logger, out_of_sample_flag):
+def post_process(instance, paths, empire_config, opt, logger, out_of_sample_flag):
     if empire_config.pickle_instance_flag:
-        pickle_instance(instance, run_config.run_name, empire_config.use_temporary_directory, logger, empire_config.temporary_directory)
+        pickle_instance(instance, paths.run_name, empire_config.use_temporary_directory, logger, empire_config.temporary_directory)
 
     #instance.display('outputs_gurobi.txt')
 
     #import pdb; pdb.set_trace()
 
-    write_results(instance, run_config.results_path, run_config.run_name, out_of_sample_flag, empire_config.emission_cap_flag, empire_config.print_iamc_flag, logger)
+    write_results(instance, paths.results_path, paths.run_name, out_of_sample_flag, empire_config.emission_cap_flag, empire_config.print_iamc_flag, logger)
 
     if empire_config.compute_operational_duals_flag and not out_of_sample_flag:
-        run_operational_model(instance, opt, run_config.results_path, run_config.run_name, logger)
-        write_operational_results(instance, run_config.results_path, empire_config.emission_cap_flag, logger)
+        run_operational_model(instance, opt, paths.results_path, paths.run_name, logger)
+        write_operational_results(instance, paths.results_path, empire_config.emission_cap_flag, logger)
     return
 
 
