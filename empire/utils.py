@@ -2,13 +2,28 @@ import shutil
 from argparse import ArgumentTypeError
 from datetime import datetime
 from pathlib import Path
-
+import json
 import pandas as pd
 
 
+def load_json(path: Path) -> dict:
+    """
+    Load a JSON file and return its contents as a dictionary.
+
+    :param path: Path to the JSON file
+    :returns: Dictionary with the contents of the JSON file
+    """
+    if not path.is_file():
+        raise ValueError(f"'{path}' is not a file!")
+
+    with open(path, "r", encoding="utf-8") as file:
+        data = json.load(file)
+
+    return data
+
 def copy_csv_dataset(src_path: Path, dest_path: Path):
     """
-    Copy dataset from source to destination folder.
+    Copy all CSV files from source to destination, including a sampling key if present.
 
     :param src_path: Folder containing dataset
     :param dest_path: Folder to copy the dataset
@@ -16,7 +31,7 @@ def copy_csv_dataset(src_path: Path, dest_path: Path):
     if not src_path.is_dir():
         raise ValueError(f"'{src_path}' is not a directory!")
 
-    for dir_name in ["General", "Generator", "Node", "Sets", "Storage", "Transmission"]:
+    for dir_name in ["General", "Generator", "Node", "Sets", "Storage", "Transmission", "ScenarioData"]:
         src_dir = src_path / dir_name
         dest_dir = dest_path / dir_name
         dest_dir.mkdir(parents=True, exist_ok=True)
@@ -28,7 +43,6 @@ def copy_csv_dataset(src_path: Path, dest_path: Path):
 
 
 def copy_scenario_data(base_dataset, scenario_data_path, use_scenario_generation, use_fixed_sample):
-    """
     Copy scenario data from base dataset to active Empire dataset.
 
     :param base_dataset: path to base Empire dataset.
@@ -58,22 +72,7 @@ def copy_file(src_file: Path, dest_file: Path):
         raise ValueError(f"'{src_file}' is not a file!")
 
     shutil.copyfile(src_file, dest_file)
-
-
-def get_run_name(empire_config, version: str):
-    name = (
-        f"{version}_reg{empire_config.length_of_regular_season}"
-        + f"_peak{empire_config.len_peak_season}_sce{empire_config.number_of_scenarios}"
-    )
-
-    if empire_config.use_scenario_generation and not empire_config.use_fixed_sample:
-        name = name + "_randomSGR"
-    else:
-        name = name + "_noSGR"
-    name = name + str(datetime.now().strftime("_%Y%m%d%H%M"))
-
-    return name
-
+    
 
 def create_if_not_exist(path: Path) -> Path:
     if not path.exists():
