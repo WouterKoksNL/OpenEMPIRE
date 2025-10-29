@@ -3,14 +3,15 @@ import json
 import logging
 from pathlib import Path
 
+from empire.core.optimization.empire import run_empire
 from empire.core.config import (EmpireConfiguration, read_config_file)
 
 from empire.core.paths import setup_run_paths, PathsConfig
 from empire.core.scenario_random import generate_random_scenario
 from empire.input_data_manager import IDataManager
-from empire.utils import (copy_csv_dataset, copy_scenario_data,
-                          create_if_not_exist, get_run_name)
+from empire.utils import copy_csv_dataset, load_json
 from empire.core.benders.algorithm import run_benders
+from empire.core.optimization.operational import OperationalInputParams
 
 
 logger = logging.getLogger(__name__)
