@@ -104,9 +104,7 @@ def run_empire_model(
     periods_active = [i + 1 for i in range(int((empire_config.forecast_horizon_year - 2020) / empire_config.leap_years_investment))]
     operational_input_params = define_operational_input_params(empire_config)
 
-
-    with open(run_config.empire_path / "config/countries.json", "r", encoding="utf-8") as file:
-
+ 
     logger.info("++++++++")
     logger.info("+EMPIRE+")
     logger.info("++++++++")
