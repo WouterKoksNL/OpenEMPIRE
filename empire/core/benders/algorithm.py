@@ -8,8 +8,8 @@ from empire.core.config import EmpireConfiguration
 from empire.core.paths import PathsConfig
 from .master_problem import create_master_problem_instance, solve_master_problem, extract_capacity_params, define_initial_capacity_params
 from .subproblem import init_subproblem, solve_subproblem, update_capacity_values, OperationalInputParams
-from empire.core.optimization.objective import SCALING_FACTOR
-from empire.core.optimization.loading_utils import filter_dict
+from empire.core.full.objective import SCALING_FACTOR
+from empire.core.full.loading_utils import filter_dict
 from .cuts import create_scenario_cut
 
 logger = logging.getLogger(__name__)

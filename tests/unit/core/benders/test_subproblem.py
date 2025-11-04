@@ -10,9 +10,9 @@ from empire.core.model_runner import define_operational_input_params
 from empire.core.config import EmpireConfiguration
 from empire.core.model_runner import setup_run_paths, stochastic_input_setup
 from empire.core.config import read_config_file
-from empire.core.optimization.empire import run_empire
-from empire.core.optimization.loading_utils import filter_dict
-from empire.core.optimization.objective import SCALING_FACTOR
+from empire.core.full.empire import run_empire
+from empire.core.full.loading_utils import filter_dict
+from empire.core.full.objective import SCALING_FACTOR
 from empire.utils import copy_csv_dataset
 
 class TestSubProblem(unittest.TestCase):
