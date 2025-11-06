@@ -273,7 +273,7 @@ def clean_input_data(src_folder: Path, clean_folder: Path, extra_folder: Path):
                 continue
 
             # special-case: split Sets/Generators and Sets/Storage
-            if category == "Sets" and filename in ["Generators", "Storage"]:
+            if category == "Sets" and filename in ["Generators", "Storage", "Nodes"]:
                 df = pd.read_csv(csv_path, dtype=str, keep_default_na=False)
                 df = df.map(lambda v: v.strip() if isinstance(v, str) else v)
                 for col in df.columns:
@@ -339,6 +339,7 @@ filename_dict = {
         "genRampUpCap": "RampRate.csv",
         "genCapAvailTypeRaw": "GeneratorTypeAvailability.csv",
         "genCO2TypeFactor": "CO2Content.csv",
+        "genCO2Captured": "CO2Captured.csv",
         "genLifetime": "Lifetime.csv",
     },
 

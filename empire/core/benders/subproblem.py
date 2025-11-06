@@ -14,7 +14,7 @@ from pyomo.environ import (
     Suffix
 )
 
-from empire.core.full.loading_utils import load_dict_into_dataportal, load_parameters
+from empire.core.loading_utils import load_dict_into_dataportal, load_parameters
 from empire.core.full.objective import define_objective
 from empire.core.full.operational import OperationalInputParams, derive_stochastic_parameters, define_operational_sets, define_operational_constraints, prep_operational_parameters, define_operational_variables, define_operational_parameters, load_operational_parameters, define_stochastic_input, load_stochastic_input, define_period_and_scenario_dependent_parameters
 from empire.core.full.shared_data import define_shared_sets, load_shared_sets, define_shared_parameters, load_shared_parameters
@@ -23,7 +23,7 @@ from empire.core.full.solver import set_solver, solve, SolvingMethods
 from empire.core.full.helpers import pickle_instance, log_problem_statistics, prepare_results_dir, prepare_temp_dir
 from empire.core.config import EmpireConfiguration
 from empire.core.paths import PathsConfig
-from empire.core.full.loading_utils import load_set_directly, filter_dict, get_df, filter_df, load_parameter_from_df
+from empire.core.loading_utils import load_set_directly, filter_dict, get_df, filter_df, load_parameter_from_df
 
 
 logger = logging.getLogger(__name__)
@@ -123,7 +123,6 @@ def load_data(
         data,
         dataset_dir=paths.dataset_path,
         emission_cap_flag=empire_config.emission_cap_flag,
-        filtering_flag=True,
         period=period,
         scenario=scenario
     )
@@ -132,7 +131,6 @@ def load_data(
         model,
         data,
         dataset_dir=paths.dataset_path,
-        filtering_flag=True,
         period=period,
         scenario=scenario,
     )

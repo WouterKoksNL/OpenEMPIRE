@@ -14,7 +14,7 @@ from empire.core.model_runner import define_operational_input_params
 from empire.core.config import EmpireConfiguration
 from empire.core.model_runner import setup_run_paths, stochastic_input_setup
 from empire.core.config import read_config_file
-from empire.core.full.empire import run_empire
+from empire.core.full.main import run_empire
 from empire.core.benders.algorithm import run_benders
 from empire.logger import get_empire_logger
 

@@ -3,15 +3,15 @@
 
 use_temporary_directory: True                          # Specifies whether to use a temporary directory for operations
 temporary_directory: './'                              # Path to the temporary directory used for certain operations
-forecast_horizon_year: 2030                            # Target or end year for the run
+forecast_horizon_year: 2040                            # Target or end year for the run
 number_of_scenarios: 2                                 # Number of scenarios in every investment period
-length_of_regular_season: 24                           # Number of hours in a regular season
+length_regular_season: 24                           # Number of hours in a regular season
 regular_seasons: ['winter', 'spring']
 discount_rate: 0.05                                    # Rate used to discount future cash flows to present value
 wacc: 0.05                                             # Weighted average cost of capital
 optimization_solver: "Gurobi"                          # Mathematical solver used for optimization tasks
-use_scenario_generation: True                          # Indicates if scenarios should be generated dynamically
-use_fixed_sample: False                                # Specifies if fixed scenario samples should be used  
+fixed_sampling_key_flag: False                         # Specifies if a sampling key should be used to select scenarios
+fixed_csv_sample_flag: False                           # Specifies if explicitly supplied fixed scenarios should be used
 filter_make : False                                    #
 filter_use : False                                     #
 copula_clusters_make: False                            # Make copula clusters (for copula-strata SGR)
@@ -29,8 +29,20 @@ north_sea_flag: False                                       # Whether the north 
 leap_years_investment: 5                               # Number of years per period (default: 5)
 time_format: "%d/%m/%Y %H:%M"                          # Time format for scenario data files
 
-benders_flag: False                     # Whether to use Benders decompsition 
+benders_flag: False                   # Whether to use Benders decompsition 
 max_benders_iterations: 50
 include_hydro_node_limit_constraint_flag: False
 parallel_benders_flag: False
 n_cores: 2
+
+cvar_flag: False
+cvar_percentile: 0.95
+cvar_weight: 0.0
+
+industry_flexibility_flag: False
+steel_CCS_capture_rate: 
+steel_CCS_cost_increase: 
+
+gas_h2_repurpose_cost_factor: 0.25
+repurposeEnergyFlowFactor: 0.8
+

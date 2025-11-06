@@ -21,7 +21,7 @@ def load_json(path: Path) -> dict:
 
     return data
 
-def copy_csv_dataset(src_path: Path, dest_path: Path):
+def copy_csv_dataset(src_path: Path, dest_path: Path, subdirs: list[str]):
     """
     Copy all CSV files from source to destination, including a sampling key if present.
 
@@ -32,7 +32,7 @@ def copy_csv_dataset(src_path: Path, dest_path: Path):
     if not src_path.is_dir():
         raise ValueError(f"'{src_path}' is not a directory!")
 
-    for dir_name in ["General", "Generator", "Node", "Sets", "Storage", "Transmission", "ScenarioData"]:
+    for dir_name in subdirs:
         src_dir = src_path / dir_name
         dest_dir = dest_path / dir_name
         dest_dir.mkdir(parents=True, exist_ok=True)

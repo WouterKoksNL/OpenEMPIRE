@@ -5,12 +5,14 @@ use_temporary_directory: True                          # Specifies whether to us
 temporary_directory: './'                              # Path to the temporary directory used for certain operations
 forecast_horizon_year: 2030                            # Target or end year for the run
 number_of_scenarios: 2                                 # Number of scenarios in every investment period
-length_of_regular_season: 168                          # Number of hours in a regular season
+length_regular_season: 168                          # Number of hours in a regular season
 discount_rate: 0.05                                    # Rate used to discount future cash flows to present value
 wacc: 0.05                                             # Weighted average cost of capital
 optimization_solver: "Gurobi"                          # Mathematical solver used for optimization tasks
-use_scenario_generation: True                         # Indicates if scenarios should be generated dynamically
-use_fixed_sample: False                                # Specifies if fixed scenario samples should be used
+
+use_default_timeseries_source: True                    # If True use the ScenarioData folder in input_data/ScenarioData, instead of input_data/<version>/ScenarioData
+fixed_sampling_key_flag: False                         # Specifies if a sampling key should be used to select scenarios from 
+fixed_csv_sample_flag: False                           # Specifies if explicitly supplied fixed scenarios should be used
 filter_make : False                                    #
 filter_use : False                                     #
 copula_clusters_make: False                            # Make copula clusters (for copula-strata SGR)
@@ -24,12 +26,23 @@ compute_operational_duals: True                        # Resolve empire with fix
 print_iamc_flag: False                            # Output should be printed in a IAMC-compatible format
 write_in_lp_format: False                              # Problem should be written in Linear Programming format
 serialize_instance: False                              # Serialize the data structure or model for later use
-north_sea_flag: True                                        # Whether the north sea is modelled or not
+north_sea_flag: False                                       # Whether the north sea is modelled or not
 leap_years_investment: 10                               # Number of years per period (default: 5)
 time_format: "%d/%m/%Y %H:%M"                          # Time format for scenario data files
 
-benders_flag: False                              # Whether to use Benders decompsition 
+benders_flag: False                             # Whether to use Benders decompsition 
 max_benders_iterations: 10
 include_hydro_node_limit_constraint_flag: False
 parallel_benders_flag: False
-n_cores: 8
+n_cores: 4
+
+cvar_flag: False
+cvar_percentile: 0.95
+cvar_weight: 0.0
+
+industry_flexibility_flag: False
+
+steel_CCS_capture_rate: 
+steel_CCS_cost_increase: 
+
+gas_h2_repurpose_cost_factor: 0.25

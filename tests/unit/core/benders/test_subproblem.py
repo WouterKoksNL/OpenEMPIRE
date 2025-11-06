@@ -10,8 +10,8 @@ from empire.core.model_runner import define_operational_input_params
 from empire.core.config import EmpireConfiguration
 from empire.core.model_runner import setup_run_paths, stochastic_input_setup
 from empire.core.config import read_config_file
-from empire.core.full.empire import run_empire
-from empire.core.full.loading_utils import filter_dict
+from empire.core.full.main import run_empire
+from empire.core.loading_utils import filter_dict
 from empire.core.full.objective import SCALING_FACTOR
 from empire.utils import copy_csv_dataset
 
@@ -37,6 +37,7 @@ class TestSubProblem(unittest.TestCase):
 
         # Define a single scenario for simplicity
         scenario = operational_input_params.scenarios[1]
+        gas_scenario = operational_input_params.gas_scenarios[0]
         period_active = periods_active[1]
 
         stochastic_input_setup(empire_config, paths)
@@ -99,10 +100,10 @@ class TestSubProblem(unittest.TestCase):
 
 
         operational_costs = pd.Series({
-            (i, w): SCALING_FACTOR * instance.discount_multiplier[i] * instance.operationalcost[i, w] for i in periods_active for w in operational_input_params.scenarios
+            (i, ww, wg): SCALING_FACTOR * instance.discount_multiplier[i] * instance.operational_cost_scenario[i, ww, wg] for i in periods_active for ww in operational_input_params.scenarios for wg in operational_input_params.gas_scenarios
         })
 
-        specific_operational_cost = operational_costs.loc[(period_active, scenario)]
+        specific_operational_cost = operational_costs.loc[(period_active, scenario, gas_scenario)]
         if not capacity_param_values:
             self.fail("Filtered data is empty.")
         # for capacity_var, capacity_dict in filtered_params.items():

@@ -15,44 +15,75 @@ def read_config_file(path: Path) -> Dict:
 class EmpireConfiguration:
     def __init__(
         self,
+        # General settings
         use_temporary_directory: bool,
         temporary_directory: str | Path,
         forecast_horizon_year: int,
-        number_of_scenarios: int,
-        length_of_regular_season: int,
-        discount_rate: float,
-        wacc: float,
-        optimization_solver: str,
-        fixed_sampling_key_flag: bool,
-        fixed_csv_sample_flag: bool,
-        filter_make: bool,
-        filter_use: bool,
-        n_cluster: int,
-        moment_matching: bool,
-        copula_clusters_make: bool,
-        copula_clusters_use: bool,
-        copulas_to_use: list[str],
-        n_tree_compare: int,
-        emission_cap_flag: bool,
-        compute_operational_duals_flag: bool,
-        print_iamc_flag: bool,
-        write_in_lp_format: bool,
-        serialize_instance: bool,
-        north_sea_flag: bool,
+        time_format: str = "%d/%m/%Y %H:%M",
+        optimization_solver: str = "Gurobi",
+
+        # Financial parameters
+        discount_rate: float = 0.05,
+        wacc: float = 0.05,
+
+        # Sampling parameters
+        use_default_timeseries_source: bool = True,
+        fixed_sampling_key_flag: bool = False,
+        fixed_csv_sample_flag: bool = False,
+        filter_make: bool = False,
+        filter_use: bool = False,
+        n_cluster: int = 10,
+        moment_matching: bool = False,
+        copula_clusters_make: bool = False,
+        copula_clusters_use: bool = False,
+        copulas_to_use: list[str] = [],
+        n_tree_compare: int = 10,
+
+        # Operational parameters 
+        regular_seasons: list[str] = ["winter", "spring", "summer", "fall"],
+        n_peak_seasons: int = 2,
+        length_peak_season: int = 24,
+        leap_years_investment: int = 5,
+        number_of_scenarios: int = 10,
+        length_regular_season: int = 24 * 7,
+
+        # Flags
+        benders_flag: bool = False,
+        cvar_flag: bool = False,
+        hydrogen_flag: bool = False,
+        heat_flag: bool = False,
+        industry_flag: bool = False,
+        industry_flexibility_flag: bool = False,
+        emission_cap_flag: bool = True,
+        compute_operational_duals_flag: bool = False,
+        print_iamc_flag: bool = False,
+        write_in_lp_format: bool = False,
+        serialize_instance: bool = False,
+        north_sea_flag: bool = True,
+        pickle_instance_flag: bool = False,
+
+        # Voronoi SGR
         voronoi_sgr_make: bool = False,
         voronoi_sgr_use: bool = False,
         voronoi_mu_percentile: int = 80,
-        regular_seasons: list[str] = ["winter", "spring", "summer", "fall"],
-        n_peak_seasons: int = 2,
-        len_peak_season: int = 24,
-        leap_years_investment: int = 5,
-        time_format: str = "%d/%m/%Y %H:%M",
-        benders_flag: bool = False,
+        
         max_benders_iterations: int = 50,
-        pickle_instance_flag: bool = False,
-        include_hydro_node_limit_constraint_flag: bool = True,
         parallel_benders_flag: bool = False,
         n_cores: int = 4,
+        include_hydro_node_limit_constraint_flag: bool = True,
+        
+        # Risk parameters
+        cvar_percentile: float = 0.95,
+        cvar_weight: float = 0.0,
+
+        # Industry parameters
+        steel_CCS_capture_rate: float | None = 0.9,
+        steel_CCS_cost_increase: float | None = 1.,
+
+        # Hydrogen parameters
+        gas_h2_repurpose_cost_factor: float | None = 0.25,
+        repurposeEnergyFlowFactor: float | None = 0.8,
+
         **kwargs,
     ):
         """
@@ -62,7 +93,7 @@ class EmpireConfiguration:
         :param temporary_directory: Path to the temporary directory used for certain operations.
         :param forecast_horizon_year: The last strategic (investment) period used in the optimization run. NB! Must correspond with data for version.
         :param number_of_scenarios: The number of scenarios in every investment period.
-        :param length_of_regular_season: The number of chronological time steps in a regular season. NB! Must correspond with data for version.
+        :param length_regular_season: The number of chronological time steps in a regular season. NB! Must correspond with data for version.
         :param discount_rate: Rate used to discount future cash flows to present value.
         :param wacc: The Weighted Average Cost of Capital (WACC).
         :param optimization_solver: Mathematical solver used for optimization tasks. Options: “Xpress”, “Gurobi”, “CPLEX”.
@@ -84,59 +115,104 @@ class EmpireConfiguration:
         :param time_format: Time format
 
         """
-        # Model parameters
+
+        # ------------------------------
+        # General settings
+        # ------------------------------
         self.use_temporary_directory = use_temporary_directory
         self.temporary_directory = Path(temporary_directory).absolute()
         self.forecast_horizon_year = forecast_horizon_year
-        self.number_of_scenarios = number_of_scenarios
-        self.length_of_regular_season = length_of_regular_season
+        self.time_format = time_format
+        self.optimization_solver = optimization_solver
+
+        # ------------------------------
+        # Financial parameters
+        # ------------------------------
         self.discount_rate = discount_rate
         self.wacc = wacc
-        self.optimization_solver = optimization_solver
+
+        # ------------------------------
+        # Sampling parameters
+        # ------------------------------
+        self.use_default_timeseries_source = use_default_timeseries_source
         self.fixed_sampling_key_flag = fixed_sampling_key_flag
         self.fixed_csv_sample_flag = fixed_csv_sample_flag
         self.filter_make = filter_make
         self.filter_use = filter_use
-        self.copulas_to_use = copulas_to_use
-        self.copula_clusters_make = copula_clusters_make
-        self.copula_clusters_use = copula_clusters_use
         self.n_cluster = n_cluster
         self.moment_matching = moment_matching
+        self.copula_clusters_make = copula_clusters_make
+        self.copula_clusters_use = copula_clusters_use
+        self.copulas_to_use = copulas_to_use
         self.n_tree_compare = n_tree_compare
+
+        # ------------------------------
+        # Operational parameters
+        # ------------------------------
+        self.regular_seasons = regular_seasons
+        self.n_peak_seasons = n_peak_seasons
+        self.length_peak_season = length_peak_season
+        self.leap_years_investment = leap_years_investment
+        self.number_of_scenarios = number_of_scenarios
+        self.length_regular_season = length_regular_season
+
+        # ------------------------------
+        # Flags
+        # ------------------------------
+        self.benders_flag = benders_flag
+        self.cvar_flag = cvar_flag
+        self.hydrogen_flag = hydrogen_flag
+        self.heat_flag = heat_flag
+        self.industry_flag = industry_flag
+        self.industry_flexibility_flag = industry_flexibility_flag
         self.emission_cap_flag = emission_cap_flag
         self.compute_operational_duals_flag = compute_operational_duals_flag
         self.print_iamc_flag = print_iamc_flag
         self.write_in_lp_format = write_in_lp_format
         self.serialize_instance = serialize_instance
         self.north_sea_flag = north_sea_flag
+        self.pickle_instance_flag = pickle_instance_flag
+
+        # ------------------------------
+        # Voronoi SGR
+        # ------------------------------
         self.voronoi_sgr_make = voronoi_sgr_make
         self.voronoi_sgr_use = voronoi_sgr_use
         self.voronoi_mu_percentile = voronoi_mu_percentile
+        self.max_benders_iterations = max_benders_iterations
+        self.parallel_benders_flag = parallel_benders_flag
+        self.n_cores = n_cores
         self.include_hydro_node_limit_constraint_flag = include_hydro_node_limit_constraint_flag
 
-        # Optional parameters
-        self.regular_seasons = regular_seasons
-        self.n_peak_seasons = n_peak_seasons
-        self.len_peak_season = len_peak_season
-        self.leap_years_investment = leap_years_investment
-        self.time_format = time_format
+        # ------------------------------
+        # Risk parameters
+        # ------------------------------
+        self.cvar_percentile = cvar_percentile
+        self.cvar_weight = cvar_weight
 
+        # ------------------------------
+        # Industry parameters
+        # ------------------------------
+        self.steel_CCS_capture_rate = steel_CCS_capture_rate
+        self.steel_CCS_cost_increase = steel_CCS_cost_increase
+
+        # ------------------------------
+        # Hydrogen parameters
+        # ------------------------------
+        self.gas_h2_repurpose_cost_factor = gas_h2_repurpose_cost_factor
+        self.repurposeEnergyFlowFactor = repurposeEnergyFlowFactor
+        # ------------------------------
         # Computed attributes
+        # ------------------------------
         self.n_reg_season = len(regular_seasons)
         self.periods = [i + 1 for i in range(int((self.forecast_horizon_year - 2020) / self.leap_years_investment))]
         self.n_periods = len(self.periods)
 
-        # Benders
-        self.benders_flag = benders_flag
-        self.max_benders_iterations = max_benders_iterations
-        self.parallel_benders_flag = parallel_benders_flag
-        self.n_cores = n_cores
-        
-        # pickling
-        self.pickle_instance_flag = pickle_instance_flag
-
-        # Validate the configuration
+        # ------------------------------
+        # Validation
+        # ------------------------------
         self.validate()
+
 
     def validate(self):
         """

@@ -71,7 +71,7 @@ For more details, please refer to the software documentation in the repository.
     <td>The number of scenarios in every investment period.  </td>
   </tr>
   <tr>
-    <td>length_of_regular_season</td>
+    <td>length_regular_season</td>
     <td>Integer</td>
     <td>168</td>
     <td>The number of hours to use in a regular season for optimization of system operation in every investment period. </td>

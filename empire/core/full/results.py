@@ -10,7 +10,7 @@ def get_investment_periods(instance):
     """Terrible function to get the investment periods from the model instance. """
     inv_per = []
     for i in instance.PeriodActive:
-        my_string = str(value(2020+int(i-1)*instance.LeapYearsInvestment.value))+"-"+str(value(2020+int(i)*instance.LeapYearsInvestment.value))
+        my_string = str(value(2020+int(i-1)*instance.leap_years_investment.value))+"-"+str(value(2020+int(i)*instance.leap_years_investment.value))
         inv_per.append(my_string)
     return inv_per
 
@@ -471,12 +471,12 @@ def write_results(
     
         for s in instance.Season:
             if s not in 'peak':
-                t=pd.to_datetime(list(range(instance.lengthRegSeason.value)), unit='h', origin=pd.Timestamp(seasonstart[s]))
+                t=pd.to_datetime(list(range(instance.length_reg_season.value)), unit='h', origin=pd.Timestamp(seasonstart[s]))
                 t=[str(i)[5:-3] for i in t]
                 t=[str(i)+"+01:00" for i in t]
                 seasonhours+=t
             else:
-                t=pd.to_datetime(list(range(instance.lengthPeakSeason.value)), unit='h', origin=pd.Timestamp(seasonstart[s]))
+                t=pd.to_datetime(list(range(instance.length_peak_season.value)), unit='h', origin=pd.Timestamp(seasonstart[s]))
                 t=[str(i)[5:-3] for i in t]
                 t=[str(i)+"+01:00" for i in t]
                 seasonhours+=t       
@@ -495,23 +495,23 @@ def write_results(
 
         logger.info("Writing standard output to .csv...")
         
-        f = pd.DataFrame(columns=["model", "scenario", "region", "variable", "unit", "subannual"]+[value(2020+(i)*instance.LeapYearsInvestment) for i in instance.PeriodActive])
+        f = pd.DataFrame(columns=["model", "scenario", "region", "variable", "unit", "subannual"]+[value(2020+(i)*instance.leap_years_investment) for i in instance.PeriodActive])
 
         def row_write(df, region, variable, unit, subannual, input_value, scenario=Scenario, modelname=Modelname):
             df2 = pd.DataFrame([[modelname, scenario, region, variable, unit, subannual]+input_value],
-                               columns=["model", "scenario", "region", "variable", "unit", "subannual"]+[value(2020+(i)*instance.LeapYearsInvestment) for i in instance.PeriodActive])
+                               columns=["model", "scenario", "region", "variable", "unit", "subannual"]+[value(2020+(i)*instance.leap_years_investment) for i in instance.PeriodActive])
             df = pd.concat([df, df2], ignore_index=True)
             return df
 
-        f = row_write(f, "Europe", "Discount rate|Electricity", "%", "Year", [value(instance.discountrate*100)]*len(instance.PeriodActive)) #Discount rate
+        f = row_write(f, "Europe", "Discount rate|Electricity", "%", "Year", [value(instance.discount_rate*100)]*len(instance.PeriodActive)) #Discount rate
         f = row_write(f, "Europe", "Capacity|Electricity", "GW", "Year", [value(sum(instance.genInstalledCap[n,g,i]*GWperMW for (n,g) in instance.GeneratorsOfNode)) for i in instance.PeriodActive]) #Total European installed generator capacity 
-        f = row_write(f, "Europe", "Investment|Energy Supply|Electricity", "billion US$2010/yr", "Year", [value((1/instance.LeapYearsInvestment)*USD10perEUR18* \
+        f = row_write(f, "Europe", "Investment|Energy Supply|Electricity", "billion US$2010/yr", "Year", [value((1/instance.leap_years_investment)*USD10perEUR18* \
                     sum(instance.genInvCost[g,i]*instance.genInvCap[n,g,i] for (n,g) in instance.GeneratorsOfNode) + \
                     sum(instance.transmissionInvCost[n1,n2,i]*instance.transmissionInvCap[n1,n2,i] for (n1,n2) in instance.BidirectionalArc) + \
                     sum((instance.storPWInvCost[b,i]*instance.storPWInvCap[n,b,i]+instance.storENInvCost[b,i]*instance.storENInvCap[n,b,i]) for (n,b) in instance.StoragesOfNode)) for i in instance.PeriodActive]) #Total European investment cost (gen+stor+trans)
-        f = row_write(f, "Europe", "Investment|Energy Supply|Electricity|Electricity storage", "billion US$2010/yr", "Year", [value((1/instance.LeapYearsInvestment)*USD10perEUR18* \
+        f = row_write(f, "Europe", "Investment|Energy Supply|Electricity|Electricity storage", "billion US$2010/yr", "Year", [value((1/instance.leap_years_investment)*USD10perEUR18* \
                     sum((instance.storPWInvCost[b,i]*instance.storPWInvCap[n,b,i]+instance.storENInvCost[b,i]*instance.storENInvCap[n,b,i]) for (n,b) in instance.StoragesOfNode)) for i in instance.PeriodActive]) #Total European storage investment cost
-        f = row_write(f, "Europe", "Investment|Energy Supply|Electricity|Transmission and Distribution", "billion US$2010/yr", "Year", [value((1/instance.LeapYearsInvestment)*USD10perEUR18* \
+        f = row_write(f, "Europe", "Investment|Energy Supply|Electricity|Transmission and Distribution", "billion US$2010/yr", "Year", [value((1/instance.leap_years_investment)*USD10perEUR18* \
                     sum(instance.transmissionInvCost[n1,n2,i]*instance.transmissionInvCap[n1,n2,i] for (n1,n2) in instance.BidirectionalArc)) for i in instance.PeriodActive]) #Total European transmission investment cost
         for w in instance.Scenario:
             f = row_write(f, "Europe", "Emissions|CO2|Energy|Supply|Electricity", "Mt CO2/yr", "Year", [value(Mtonperton*sum(instance.seasScale[s]*instance.genCO2TypeFactor[g]*(GJperMWh/instance.genEfficiency[g,i])* \
@@ -530,7 +530,7 @@ def write_results(
             f = row_write(f, "Europe", "Capital Cost|Electricity|"+dict_generators[str(g)], "US$2010/kW", "Year", [value(instance.genCapitalCost[g,i]*USD10perEUR18) for i in instance.PeriodActive]) #Capital generator cost
             if value(instance.genMargCost[g,instance.PeriodActive[1]]) != 0: 
                 f = row_write(f, "Europe", "Variable Cost|Electricity|"+dict_generators[str(g)], "EUR/MWh", "Year", [value(instance.genMargCost[g,i]) for i in instance.PeriodActive])
-            f = row_write(f, "Europe", "Investment|Energy Supply|Electricity|"+dict_generators[str(g)], "billion US$2010/yr", "Year", [value((1/instance.LeapYearsInvestment)*USD10perEUR18* \
+            f = row_write(f, "Europe", "Investment|Energy Supply|Electricity|"+dict_generators[str(g)], "billion US$2010/yr", "Year", [value((1/instance.leap_years_investment)*USD10perEUR18* \
                     sum(instance.genInvCost[g,i]*instance.genInvCap[n,g,i] for n in instance.Node if (n,g) in instance.GeneratorsOfNode)) for i in instance.PeriodActive]) #Total generator investment cost per type
             if value(instance.genCO2TypeFactor[g]) != 0:
                 f = row_write(f, "Europe", "CO2 Emmissions|Electricity|"+dict_generators[str(g)], "tons/MWh", "Year", [value(instance.genCO2TypeFactor[g]*(GJperMWh/instance.genEfficiency[g,i])) for i in instance.PeriodActive]) #CO2 factor per generator type

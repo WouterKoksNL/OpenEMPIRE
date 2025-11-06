@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from pyomo.environ import Param, NonNegativeReals
 from empire.utils import get_name_of_last_folder_in_path
-from .loading_utils import load_params
+from ..loading_utils import load_params
 
 
 def set_investments_as_parameters(model, set_only_capacities: bool = False):

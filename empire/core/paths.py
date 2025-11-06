@@ -95,8 +95,8 @@ def setup_run_paths(
 
 def get_run_name(empire_config: EmpireConfiguration, version: str):
     name = (    
-        f"{version}_reg{empire_config.length_of_regular_season}"
-        + f"_peak{empire_config.len_peak_season}_sce{empire_config.number_of_scenarios}"
+        f"{version}_reg{empire_config.length_regular_season}"
+        + f"_peak{empire_config.length_peak_season}_sce{empire_config.number_of_scenarios}"
     )
 
     if not empire_config.fixed_sampling_key_flag and not empire_config.fixed_csv_sample_flag:

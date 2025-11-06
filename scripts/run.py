@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from pathlib import Path
+import pandas as pd
 
 from empire.core.config import EmpireConfiguration, read_config_file
 from empire.core.model_runner import run_empire_model
@@ -40,8 +41,17 @@ paths = setup_run_paths(version=args.dataset, empire_config=empire_config, run_p
 
 
 base_dataset = Path("input_data") / args.dataset
-copy_csv_dataset(base_dataset, paths.dataset_path) 
-    # Copy base dataset to inputs.input_data_path 
+# Copy base dataset to inputs.input_data_path 
+
+subdirs = ["General", "Generator", "Node", "Sets", "Storage", "Transmission"]
+copy_csv_dataset(base_dataset, paths.dataset_path, subdirs)
+
+scenario_data_dir = (Path("input_data") if empire_config.use_default_timeseries_source else base_dataset)
+copy_csv_dataset(scenario_data_dir, paths.dataset_path, ["ScenarioData"])
+
+
+
+
 logger = get_empire_logger(paths=paths)
 
 logger.info("Running EMPIRE Model")

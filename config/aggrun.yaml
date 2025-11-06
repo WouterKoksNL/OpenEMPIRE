@@ -5,7 +5,7 @@ use_temporary_directory: True                          # Specifies whether to us
 temporary_directory: './'                              # Path to the temporary directory used for certain operations
 forecast_horizon_year: 2050                            # Target or end year for the run
 number_of_scenarios: 100                               # Number of scenarios in every investment period
-length_of_regular_season: 168                          # Number of hours in a regular season
+length_regular_season: 168                          # Number of hours in a regular season
 discount_rate: 0.05                                    # Rate used to discount future cash flows to present value
 wacc: 0.05                                             # Weighted average cost of capital
 optimization_solver: "Gurobi"                          # Mathematical solver used for optimization tasks

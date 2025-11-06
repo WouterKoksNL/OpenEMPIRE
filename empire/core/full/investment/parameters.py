@@ -1,0 +1,30 @@
+from .base.parameters import define_base_investment_parameters, load_base_investment_parameter_data
+from .hydrogen.parameters import define_hydrogen_investment_parameters, load_hydrogen_investment_parameter_data
+from .heat.parameters import define_heat_investment_parameters, load_heat_investment_parameter_data
+from .industry.parameters import define_industry_investment_parameters, load_industry_investment_parameter_data
+
+def define_investment_parameters(model, flags):
+    define_base_investment_parameters(model)
+
+    if flags.hydrogen:
+        define_hydrogen_investment_parameters(model)
+
+    if flags.heat:
+        define_heat_investment_parameters(model)
+
+    if flags.industry:
+        define_industry_investment_parameters(model)
+
+
+def load_investment_parameter_data(data, dataset_dir, model, flags, period=None):
+    # Load investment parameter data
+    load_base_investment_parameter_data(data, dataset_dir, model, period=period)
+
+    if flags.hydrogen:
+        load_hydrogen_investment_parameter_data(data, dataset_dir, model, period=period)
+
+    if flags.heat:
+        load_heat_investment_parameter_data(data, dataset_dir, model, period=period)
+
+    if flags.industry:
+        load_industry_investment_parameter_data(data, dataset_dir, model, period=period)

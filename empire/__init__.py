@@ -1,1 +1,1 @@
-from empire.core.full.empire import run_empire  # noqa
+from empire.core.full.main import run_empire  # noqa

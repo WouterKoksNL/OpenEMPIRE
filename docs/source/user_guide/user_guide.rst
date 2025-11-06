@@ -77,7 +77,7 @@ Note that generating scenarios and building the instance in Pyomo for a base cas
 +--------------------------+------------+------------------+-------------------------------------------------------------------------------------------------------------------------+
 | number_of_scenarios      | Integer    | 3                | The number of scenarios in every investment period.                                                                     |
 +--------------------------+------------+------------------+-------------------------------------------------------------------------------------------------------------------------+
-| length_of_regular_season | Integer    | 168              | The number of hours to use in a regular season for optimization of system operation in every investment period.         |
+| length_regular_season | Integer    | 168              | The number of hours to use in a regular season for optimization of system operation in every investment period.         |
 +--------------------------+------------+------------------+-------------------------------------------------------------------------------------------------------------------------+
 | discount_rate            | Float      | 0.05             | The discount rate.                                                                                                      |
 +--------------------------+------------+------------------+-------------------------------------------------------------------------------------------------------------------------+

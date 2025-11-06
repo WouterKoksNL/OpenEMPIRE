@@ -3,14 +3,14 @@ import json
 import logging
 from pathlib import Path
 
-from empire.core.full.empire import run_empire
+from empire.core.full.main import run_empire
 from empire.core.config import (EmpireConfiguration, read_config_file)
 
 from empire.core.paths import setup_run_paths, PathsConfig
 from empire.core.scenario_random import generate_random_scenario
 from empire.input_data_manager import IDataManager
 from empire.utils import copy_csv_dataset, load_json
-from empire.core.benders.algorithm import run_benders
+
 from empire.core.full.operational import OperationalInputParams
 
 
@@ -18,13 +18,14 @@ logger = logging.getLogger(__name__)
 
 
 def define_operational_input_params(empire_config: EmpireConfiguration):
-    FirstHoursOfRegSeason = [empire_config.length_of_regular_season * i + 1 for i in range(empire_config.n_reg_season)]
-    FirstHoursOfPeakSeason = [empire_config.length_of_regular_season * empire_config.n_reg_season + empire_config.len_peak_season * i + 1 for i in range(empire_config.n_peak_seasons)]
+    FirstHoursOfRegSeason = [empire_config.length_regular_season * i + 1 for i in range(empire_config.n_reg_season)]
+    FirstHoursOfPeakSeason = [empire_config.length_regular_season * empire_config.n_reg_season + empire_config.length_peak_season * i + 1 for i in range(empire_config.n_peak_seasons)]
     
     scenarios = ["scenario" + str(i + 1) for i in range(empire_config.number_of_scenarios)]
+    gas_scenarios = [1, 2]
     peak_seasons = ["peak" + str(i + 1) for i in range(empire_config.n_peak_seasons)]
     Season = empire_config.regular_seasons + peak_seasons
-    Operationalhour = [i + 1 for i in range(FirstHoursOfPeakSeason[-1] + empire_config.len_peak_season - 1)]
+    Operationalhour = [i + 1 for i in range(FirstHoursOfPeakSeason[-1] + empire_config.length_peak_season - 1)]
     HoursOfRegSeason = [
         (s, h)
         for s in empire_config.regular_seasons
@@ -32,8 +33,8 @@ def define_operational_input_params(empire_config: EmpireConfiguration):
         if h
         in list(
             range(
-                empire_config.regular_seasons.index(s) * empire_config.length_of_regular_season + 1,
-                empire_config.regular_seasons.index(s) * empire_config.length_of_regular_season + empire_config.length_of_regular_season + 1,
+                empire_config.regular_seasons.index(s) * empire_config.length_regular_season + 1,
+                empire_config.regular_seasons.index(s) * empire_config.length_regular_season + empire_config.length_regular_season + 1,
             )
         )
     ]
@@ -44,8 +45,8 @@ def define_operational_input_params(empire_config: EmpireConfiguration):
         if h
         in list(
             range(
-                empire_config.length_of_regular_season * len(empire_config.regular_seasons) + peak_seasons.index(s) * empire_config.len_peak_season + 1,
-                empire_config.length_of_regular_season * len(empire_config.regular_seasons) + peak_seasons.index(s) * empire_config.len_peak_season + empire_config.len_peak_season + 1,
+                empire_config.length_regular_season * len(empire_config.regular_seasons) + peak_seasons.index(s) * empire_config.length_peak_season + 1,
+                empire_config.length_regular_season * len(empire_config.regular_seasons) + peak_seasons.index(s) * empire_config.length_peak_season + empire_config.length_peak_season + 1,
             )
         )
     ]
@@ -54,12 +55,13 @@ def define_operational_input_params(empire_config: EmpireConfiguration):
     operational_input_params = OperationalInputParams(
         Operationalhour=Operationalhour,
         scenarios=scenarios,
+        gas_scenarios=gas_scenarios,
         Season=Season,
         HoursOfSeason=HoursOfSeason,
         FirstHoursOfRegSeason=FirstHoursOfRegSeason,
         FirstHoursOfPeakSeason=FirstHoursOfPeakSeason,
-        lengthRegSeason=empire_config.length_of_regular_season,
-        lengthPeakSeason=empire_config.len_peak_season,
+        length_reg_season=empire_config.length_regular_season,
+        length_peak_season=empire_config.length_peak_season,
     )
 
     return operational_input_params
@@ -130,6 +132,7 @@ def run_empire_model(
                 out_of_sample_flag=OUT_OF_SAMPLE,
             )
         else:
+            from empire.core.benders.algorithm import run_benders
             obj_value, _ = run_benders(
                 paths=paths,
                 empire_config=empire_config,
@@ -164,7 +167,12 @@ def runner(data_managers):
 
     # Copy base dataset to inputs.input_data_path 
     base_dataset = "input_data" / version
-    copy_csv_dataset(base_dataset, paths.dataset_path) 
+    subdirs = ["General", "Generator", "Node", "Sets", "Storage", "Transmission"]
+    copy_csv_dataset(base_dataset, paths.dataset_path, subdirs)
+
+    scenario_data_dir = ("input_data" if empire_config.use_default_timeseries_source else base_dataset) 
+    copy_csv_dataset(scenario_data_dir, paths.dataset_path, ["ScenarioData"])
+    
     
 
     ## Edit input data

@@ -14,7 +14,7 @@ from sklearn.cluster import KMeans
 
 from empire.core.config import EmpireConfiguration
 from empire.core.paths import PathsConfig
-from empire.core.constants import COPULA_TO_LABEL_MAPPING
+from empire.core.constants  import COPULA_TO_LABEL_MAPPING
 from empire.core.voronoi_sgr import compute_voronoi_clusters, extract_candidate_windows, make_voronoi_filter
 from empire.core.scenario_utils import make_datetime, year_season_filter, remove_time_index, season_month
 
@@ -56,7 +56,7 @@ def sample_generator(data, regularSeasonHours, scenario, season, seasons, period
                 df = pd.DataFrame(
                     data={
                         "Node": c_no,
-                        "IntermitentGenerators": generator,
+                        "Generator": generator,
                         "Operationalhour": hours,
                         "Scenario": "scenario" + str(scenario),
                         "Period": period,
@@ -68,7 +68,7 @@ def sample_generator(data, regularSeasonHours, scenario, season, seasons, period
             df = pd.DataFrame(
                 data={
                     "Node": c,
-                    "IntermitentGenerators": generator,
+                    "Generator": generator,
                     "Operationalhour": hours,
                     "Scenario": "scenario" + str(scenario),
                     "Period": period,
@@ -227,7 +227,7 @@ def sample_generator_peak(
                 df = pd.DataFrame(
                     data={
                         "Node": c_no,
-                        "IntermitentGenerators": g,
+                        "Generator": g,
                         "Operationalhour": country_hours,
                         "Scenario": "scenario" + str(scenario),
                         "Period": period,
@@ -238,7 +238,7 @@ def sample_generator_peak(
                 df = pd.DataFrame(
                     data={
                         "Node": c_no,
-                        "IntermitentGenerators": g,
+                        "Generator": g,
                         "Operationalhour": overall_hours,
                         "Scenario": "scenario" + str(scenario),
                         "Period": period,
@@ -250,7 +250,7 @@ def sample_generator_peak(
             df = pd.DataFrame(
                 data={
                     "Node": c,
-                    "IntermitentGenerators": g,
+                    "Generator": g,
                     "Operationalhour": country_hours,
                     "Scenario": "scenario" + str(scenario),
                     "Period": period,
@@ -261,7 +261,7 @@ def sample_generator_peak(
             df = pd.DataFrame(
                 data={
                     "Node": c,
-                    "IntermitentGenerators": g,
+                    "Generator": g,
                     "Operationalhour": overall_hours,
                     "Scenario": "scenario" + str(scenario),
                     "Period": period,
@@ -438,8 +438,8 @@ def generate_random_scenario(
     n_scenarios = empire_config.number_of_scenarios
     seasons = empire_config.regular_seasons
     n_periods = empire_config.n_periods
-    len_of_regular_season = empire_config.length_of_regular_season
-    len_peak_season = empire_config.len_peak_season
+    len_of_regular_season = empire_config.length_regular_season
+    length_peak_season = empire_config.length_peak_season
     time_format = empire_config.time_format
     fix_sample = empire_config.fixed_sampling_key_flag
 
@@ -841,7 +841,7 @@ def generate_random_scenario(
                             scenario=scenario,
                             period=i,
                             regularSeasonHours=len_of_regular_season,
-                            peakSeasonHours=len_peak_season,
+                            peakSeasonHours=length_peak_season,
                             overall_sample=overall_sample,
                             country_sample=country_sample,
                         ),
@@ -858,7 +858,7 @@ def generate_random_scenario(
                             scenario=scenario,
                             period=i,
                             regularSeasonHours=len_of_regular_season,
-                            peakSeasonHours=len_peak_season,
+                            peakSeasonHours=length_peak_season,
                             overall_sample=overall_sample,
                             country_sample=country_sample,
                         ),
@@ -876,7 +876,7 @@ def generate_random_scenario(
                                 scenario=scenario,
                                 period=i,
                                 regularSeasonHours=len_of_regular_season,
-                                peakSeasonHours=len_peak_season,
+                                peakSeasonHours=length_peak_season,
                                 overall_sample=overall_sample,
                                 country_sample=country_sample,
                             ),
@@ -893,7 +893,7 @@ def generate_random_scenario(
                                 scenario=scenario,
                                 period=i,
                                 regularSeasonHours=len_of_regular_season,
-                                peakSeasonHours=len_peak_season,
+                                peakSeasonHours=length_peak_season,
                                 overall_sample=overall_sample,
                                 country_sample=country_sample,
                             ),
@@ -911,7 +911,7 @@ def generate_random_scenario(
                                 scenario=scenario,
                                 period=i,
                                 regularSeasonHours=len_of_regular_season,
-                                peakSeasonHours=len_peak_season,
+                                peakSeasonHours=length_peak_season,
                                 overall_sample=overall_sample,
                                 country_sample=country_sample,
                             ),
@@ -928,7 +928,7 @@ def generate_random_scenario(
                             scenario=scenario,
                             period=i,
                             regularSeasonHours=len_of_regular_season,
-                            peakSeasonHours=len_peak_season,
+                            peakSeasonHours=length_peak_season,
                             overall_sample=overall_sample,
                             country_sample=country_sample,
                         ),
@@ -946,7 +946,7 @@ def generate_random_scenario(
                             scenario=scenario,
                             period=i,
                             regularSeasonHours=len_of_regular_season,
-                            peakSeasonHours=len_peak_season,
+                            peakSeasonHours=length_peak_season,
                             overall_sample=overall_sample,
                             country_sample=country_sample,
                         ),
@@ -964,7 +964,7 @@ def generate_random_scenario(
                             scenario=scenario,
                             period=i,
                             regularSeasonHours=len_of_regular_season,
-                            peakSeasonHours=len_peak_season,
+                            peakSeasonHours=length_peak_season,
                             overall_sample=overall_sample,
                             country_sample=country_sample,
                         ),
@@ -1021,11 +1021,11 @@ def generate_random_scenario(
 
     # Make header for .tab-file
     genAvail = genAvail[
-        ["Node", "IntermitentGenerators", "Operationalhour", "Period", "Scenario", "GeneratorStochasticAvailabilityRaw"]
+        ["Node", "Generator", "Operationalhour", "Period", "Scenario", "GeneratorStochasticAvailabilityRaw"]
     ]
     elecLoad = elecLoad[["Period", "Scenario", "Node", "Operationalhour", "ElectricLoadRaw_in_MW"]]
     hydroSeasonal = hydroSeasonal[
-        ["Period",  "Scenario", "Node", "Season", "Operationalhour", "HydroGeneratorMaxSeasonalProduction"]
+        ["Node", "Period", "Season", "Operationalhour", "Scenario", "HydroGeneratorMaxSeasonalProduction"]
     ]
 
     genAvail.loc[genAvail["GeneratorStochasticAvailabilityRaw"] <= 0.001, "GeneratorStochasticAvailabilityRaw"] = 0
