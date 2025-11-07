@@ -23,10 +23,10 @@ def define_heat_operational_expressions(model, result_file_path):
                 for h in model.Operationalhour:
                     for sce in model.Scenario:
                         for gp in model.GasScenario:
-                            model.sloadTR[n,h,i,sce,gp] = model.sloadRawTR[n,h,sce,i]*hourlyscaleTR
-                            if value(model.sloadTR[n,h,i,sce,gp]) < 0:
-                                f.write('Adjusted heat load: ' + str(value(model.sloadTR[n,h,i,sce,gp])) + ', 0 MW for hour ' + str(h) + ' and scenario ' + str(sce) + ' in ' + str(n) + "\n")
-                                model.sloadTR[n,h,i,sce,gp] = 0
+                            model.sloadTR[n,h,i,sce] = model.sloadRawTR[n,h,sce,i]*hourlyscaleTR
+                            if value(model.sloadTR[n,h,i,sce]) < 0:
+                                f.write('Adjusted heat load: ' + str(value(model.sloadTR[n,h,i,sce])) + ', 0 MW for hour ' + str(h) + ' and scenario ' + str(sce) + ' in ' + str(n) + "\n")
+                                model.sloadTR[n,h,i,sce] = 0
                                 counter += 1
         f.write('Hours with too small raw heat load: ' + str(counter))
         f.close()
