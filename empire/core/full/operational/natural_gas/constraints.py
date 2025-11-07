@@ -19,14 +19,39 @@ def define_operational_natural_gas_constraints(model, leap_years_investment, hyd
         else:
             return Constraint.Skip
     model.naturalGas_max_reserves = Constraint(model.NaturalGasNode, model.NaturalGasTerminals, model.Scenario, model.GasScenario, rule=naturalGas_max_reserves_rule)
+    
+    def naturalGas_storage_initial_rule(model, n, h, i, w, gp):
+        """Set the initial storage level at the start of each season."""
+        if h in model.FirstHoursOfRegSeason or h in model.FirstHoursOfPeakSeason:
+            return (
+                model.ng_storageOperational[n, h, i, w, gp] 
+                == model.ng_storageInit * model.ng_storageCapacity[n]
+                + model.ng_storageChargeEff * model.ng_chargeStorage[n, h, i, w, gp]
+                - model.ng_dischargeStorage[n, h, i, w, gp]
+            ) / 1e3
+        return Constraint.Skip
+
+    model.naturalGas_storage_initial = Constraint(
+        model.NaturalGasNode, model.Operationalhour, model.Period, model.Scenario, model.GasScenario,
+        rule=naturalGas_storage_initial_rule
+    )
 
     def naturalGas_storage_balance_rule(model, n, h, i, w, gp):
-        if h in model.FirstHoursOfRegSeason or h in model.FirstHoursOfPeakSeason:
-            return (model.ng_storageInit * model.ng_storageCapacity[n] + model.ng_storageChargeEff * model.ng_chargeStorage[n,h,i,w,gp] - model.ng_dischargeStorage[n,h,i,w,gp]) / 1e3 == model.ng_storageOperational[n,h,i,w,gp] / 1e3
-        else:
-            return (model.ng_storageOperational[n,h-1,i,w,gp] + model.ng_storageChargeEff * model.ng_chargeStorage[n,h,i,w,gp] - model.ng_dischargeStorage[n,h,i,w,gp]) / 1e3 == model.ng_storageOperational[n,h,i,w,gp] / 1e3
-    model.naturalGas_storage_balance = Constraint(model.NaturalGasNode, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, rule=naturalGas_storage_balance_rule)
+        """Ensure storage continuity between consecutive hours (excluding season starts)."""
+        if h not in model.FirstHoursOfRegSeason and h not in model.FirstHoursOfPeakSeason:
+            return (
+                model.ng_storageOperational[n, h, i, w, gp]
+                == model.ng_storageOperational[n, h-1, i, w, gp]
+                + model.ng_storageChargeEff * model.ng_chargeStorage[n, h, i, w, gp]
+                - model.ng_dischargeStorage[n, h, i, w, gp]
+            ) / 1e3
+        return Constraint.Skip
 
+    model.naturalGas_storage_balance = Constraint(
+        model.NaturalGasNode, model.Operationalhour, model.Period, model.Scenario, model.GasScenario,
+        rule=naturalGas_storage_balance_rule
+    )
+    
     def naturalGas_Storage_maxCapacity_rule(model, n, h, i, w, gp):
         return model.ng_storageOperational[n,h,i,w,gp] / 1e3 <= model.ng_storageCapacity[n] / 1e3
     model.naturalGas_storage_maxCapacity = Constraint(model.NaturalGasNode, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, rule=naturalGas_Storage_maxCapacity_rule)
