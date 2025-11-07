@@ -1,0 +1,12 @@
+Type,Period,TypeCapitalCost_in_euro_per_MWkm
+HVAC_OverheadLine,1.0,1350.0
+HVAC_OverheadLine,2.0,1350.0
+HVAC_OverheadLine,3.0,1350.0
+HVDC_Cable,1.0,1680.0
+HVDC_Cable,2.0,1680.0
+HVDC_Cable,3.0,1680.0
+HVDC_Offshore,1.0,1680.0
+HVDC_Offshore,2.0,1680.0
+HVDC_Offshore,3.0,1680.0
+,,
+,,

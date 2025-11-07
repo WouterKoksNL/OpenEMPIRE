@@ -1,0 +1,10 @@
+Plant_type,Period,Variable_O&M_cost_[EUR/ton_H2]
+SMR,1,9.6
+SMR,2,6.0
+SMR,3,6.0
+SMR_CCS,1,63.6
+SMR_CCS,2,8.4
+SMR_CCS,3,8.4
+GHR_ATR_CCS,1,63.6
+GHR_ATR_CCS,2,8.4
+GHR_ATR_CCS,3,8.4

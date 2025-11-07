@@ -1,0 +1,10 @@
+Type,Period,TypeFixedOMCost_in_euro_per_MW_per_km
+HVAC_OverheadLine,1,20.25
+HVAC_OverheadLine,2,20.25
+HVAC_OverheadLine,3,20.25
+HVDC_Cable,1,42.0
+HVDC_Cable,2,42.0
+HVDC_Cable,3,42.0
+HVDC_Offshore,1,42.0
+HVDC_Offshore,2,42.0
+HVDC_Offshore,3,42.0
