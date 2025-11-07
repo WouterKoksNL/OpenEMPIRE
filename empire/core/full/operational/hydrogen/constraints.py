@@ -67,21 +67,54 @@ def add_hydrogen_transport_electric_demand(model, flow, n, h, i, w, gp):
     return flow
 
 
-def define_operational_hydrogen_constraints(model, industry_flag, leap_years_investment):
+def define_operational_hydrogen_constraints(model, industry_flag, transport_flag=False):
     
-    def naturalGas_for_hydrogen_rule(model, n, p, h, i, w, gp):
-        return model.ng_forHydrogen[n,p,h,i,w,gp] * Constants.ng_MWhPerTon == model.hydrogenProducedReformer_MWh[n,p,h,i,w,gp] / model.ReformerPlantEfficiency[p,i]
-    model.naturalGas_for_hydrogen = Constraint(model.ReformerLocations, model.ReformerPlants, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, rule=naturalGas_for_hydrogen_rule)
+    # Constraints relevant for Benders cuts:
+    
+    def hydrogen_storage_initial_rule(model, n, b, h, i, w, gp):
+        """Set the initial hydrogen storage level at the start of each season."""
+        if h in model.FirstHoursOfRegSeason or h in model.FirstHoursOfPeakSeason:
+            return (
+                model.hydrogenStorageOperational[n, b, h, i, w, gp]
+                == model.hydrogenStorageInitOperational * model.hydrogenTotalStorage[n, b, i]
+                + model.hydrogenChargeStorage[n, b, h, i, w, gp]
+                - model.hydrogenDischargeStorage[n, b, h, i, w, gp]
+            )
+        return Constraint.Skip
 
-    # To any reader of this code, the next two constraints are very ugly, and there is likely a better implementation that achieves the same. They were put together as quick fixes, and will be fixed if I remember, have time and can be bothered (in that order of priority). The last is most likely to fail.
-    def powerFromHydrogenRule(model, n, g, h, i, w, gp):
-        if g in model.HydrogenGenerators:
-            return model.genOperational[n,g,h,i,w,gp] == model.genEfficiency[g,i] * model.hydrogenForPower[g,n,h,i,w,gp] * Constants.hydrogen_MWhPerTon
-        else:
+    model.hydrogen_storage_initial = Constraint(
+        model.HydrogenProdNode, model.H2Storages, model.Operationalhour, model.Period,
+        model.Scenario, model.GasScenario,
+        rule=hydrogen_storage_initial_rule
+    )
+
+    def hydrogen_production_electrolyzer_capacity_rule(model, n, h, i, w, gp):
+        return model.powerForHydrogen[n, h, i, w, gp] <= model.elyzerTotalCap[n, i]
+
+    model.hydrogen_production_electrolyzer_capacity = Constraint(model.HydrogenProdNode, model.Operationalhour,
+                                                                    model.Period, model.Scenario, model.GasScenario,
+                                                                    rule=hydrogen_production_electrolyzer_capacity_rule)
+
+    def hydrogen_production_reformer_capacity_rule(model, n, p, h, i, w, gp):
+        return model.hydrogenProducedReformer_MWh[n, p, h, i, w, gp] <= model.ReformerTotalCap[n, p, i]
+
+    model.hydrogen_production_reformer_capacity = Constraint(model.ReformerLocations, model.ReformerPlants,
+                                                                model.Operationalhour, model.Period, model.Scenario,
+                                                                model.GasScenario,
+                                                                rule=hydrogen_production_reformer_capacity_rule)
+
+    def hydrogen_reformer_ramp_rule(model, n, p, h, i, w, gp):
+        if h in model.FirstHoursOfRegSeason or h in model.FirstHoursOfPeakSeason:
             return Constraint.Skip
+        else:
+            return model.hydrogenProducedReformer_MWh[n, p, h, i, w, gp] - model.hydrogenProducedReformer_MWh[
+                n, p, h - 1, i, w, gp] <= 0.1 * model.ReformerTotalCap[n, p, i]
 
-    model.powerFromHydrogen = Constraint(model.GeneratorsOfNode, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, rule=powerFromHydrogenRule)
+    model.hydrogen_reformer_ramp = Constraint(model.ReformerLocations, model.ReformerPlants, model.Operationalhour,
+                                                model.Period, model.Scenario, model.GasScenario,
+                                                rule=hydrogen_reformer_ramp_rule)
 
+    
     def pipeline_cap_rule(model, n1, n2, h, i, w, gp):
         if (n1, n2) in model.HydrogenBidirectionPipelines:
             return model.hydrogenSentPipeline[(n1, n2), h, i, w, gp] - model.totalHydrogenPipelineCapacity[
@@ -95,6 +128,40 @@ def define_operational_hydrogen_constraints(model, industry_flag, leap_years_inv
 
     model.pipeline_cap = Constraint(model.AllowedHydrogenLinks, model.Operationalhour, model.Period, model.Scenario,
                                     model.GasScenario, rule=pipeline_cap_rule)
+
+                                    
+    def co2_pipeline_cap_rule(model, n1, n2, h, i, w, gp):
+        if (n1, n2) in model.CO2BidirectionalPipelines:
+            return model.CO2sentPipeline[(n1, n2), h, i, w, gp] - model.totalCO2PipelineCapacity[(n1, n2), i] <= 0
+        elif (n2, n1) in model.CO2BidirectionalPipelines:
+            return model.CO2sentPipeline[(n1, n2), h, i, w, gp] - model.totalCO2PipelineCapacity[(n2, n1), i] <= 0
+
+    model.co2_pipeline_cap = Constraint(model.CO2DirectionalLinks, model.Operationalhour, model.Period, model.Scenario,
+                                        model.GasScenario, rule=co2_pipeline_cap_rule)
+    
+    def co2_sequestering_max_hourly_capacity_rule(model, n, h, i, w, gp):
+        return model.CO2sequestered[n, h, i, w, gp] <= sum(
+            model.CO2SiteCapacityDeveloped[n, j] for j in model.Period if j <= i)
+
+    model.co2_sequestering_max_capacity = Constraint(model.CO2SequestrationNodes, model.Operationalhour, model.Period,
+                                                    model.Scenario, model.GasScenario,
+                                                    rule=co2_sequestering_max_hourly_capacity_rule)
+
+
+    # Constraints with no relevance to Benders cuts: 
+
+    def naturalGas_for_hydrogen_rule(model, n, p, h, i, w, gp):
+        return model.ng_forHydrogen[n,p,h,i,w,gp] * Constants.ng_MWhPerTon == model.hydrogenProducedReformer_MWh[n,p,h,i,w,gp] / model.ReformerPlantEfficiency[p,i]
+    model.naturalGas_for_hydrogen = Constraint(model.ReformerLocations, model.ReformerPlants, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, rule=naturalGas_for_hydrogen_rule)
+
+    def powerFromHydrogenRule(model, n, g, h, i, w, gp):
+        if g in model.HydrogenGenerators:
+            return model.genOperational[n,g,h,i,w,gp] == model.genEfficiency[g,i] * model.hydrogenForPower[g,n,h,i,w,gp] * Constants.hydrogen_MWhPerTon
+        else:
+            return Constraint.Skip
+
+    model.powerFromHydrogen = Constraint(model.GeneratorsOfNode, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, rule=powerFromHydrogenRule)
+
 
     def hydrogen_flow_balance_rule(model, n, h, i, w, gp):
         balance = 0
@@ -137,20 +204,6 @@ def define_operational_hydrogen_constraints(model, industry_flag, leap_years_inv
     model.hydrogen_production = Constraint(model.HydrogenProdNode, model.Operationalhour, model.Period,
                                             model.Scenario, model.GasScenario, rule=hydrogen_production_rule)
 
-    def hydrogen_production_electrolyzer_capacity_rule(model, n, h, i, w, gp):
-        return model.powerForHydrogen[n, h, i, w, gp] <= model.elyzerTotalCap[n, i]
-
-    model.hydrogen_production_electrolyzer_capacity = Constraint(model.HydrogenProdNode, model.Operationalhour,
-                                                                    model.Period, model.Scenario, model.GasScenario,
-                                                                    rule=hydrogen_production_electrolyzer_capacity_rule)
-
-    def hydrogen_production_reformer_capacity_rule(model, n, p, h, i, w, gp):
-        return model.hydrogenProducedReformer_MWh[n, p, h, i, w, gp] <= model.ReformerTotalCap[n, p, i]
-
-    model.hydrogen_production_reformer_capacity = Constraint(model.ReformerLocations, model.ReformerPlants,
-                                                                model.Operationalhour, model.Period, model.Scenario,
-                                                                model.GasScenario,
-                                                                rule=hydrogen_production_reformer_capacity_rule)
 
     def hydrogen_link_reformer_ton_MWh_rule(model, n, p, h, i, w, gp):
         return model.hydrogenProducedReformer_ton[n, p, h, i, w, gp] == model.hydrogenProducedReformer_MWh[
@@ -160,17 +213,12 @@ def define_operational_hydrogen_constraints(model, industry_flag, leap_years_inv
                                                         model.Operationalhour, model.Period, model.Scenario,
                                                         model.GasScenario, rule=hydrogen_link_reformer_ton_MWh_rule)
 
-    def hydrogen_reformer_ramp_rule(model, n, p, h, i, w, gp):
-        if h in model.FirstHoursOfRegSeason or h in model.FirstHoursOfPeakSeason:
-            return Constraint.Skip
-        else:
-            return model.hydrogenProducedReformer_MWh[n, p, h, i, w, gp] - model.hydrogenProducedReformer_MWh[
-                n, p, h - 1, i, w, gp] <= 0.1 * model.ReformerTotalCap[n, p, i]
+    
 
-    model.hydrogen_reformer_ramp = Constraint(model.ReformerLocations, model.ReformerPlants, model.Operationalhour,
-                                                model.Period, model.Scenario, model.GasScenario,
-                                                rule=hydrogen_reformer_ramp_rule)
-
+    def H2import_capacity_rule(model, n, t, h, i, w, gp):
+        return model.H2Imported_ton[n, t, h, i, w, gp] <= model.H2ImportTotalCap[n, t, i]
+    model.H2import_capacity = Constraint(model.H2TerminalsOfNode, model.Operationalhour, model.Period, model.Scenario,
+                                            model.GasScenario, rule=H2import_capacity_rule)
     # def noHydrogenPowerRule(model,n,g,h,i,w,gp):
     #     if g in model.HydrogenGenerators:
     #         return model.hydrogenForPower[g,n,h,i,w,gp] == 0
@@ -194,19 +242,24 @@ def define_operational_hydrogen_constraints(model, industry_flag, leap_years_inv
     # 	return sum(model.seasScale[s] * model.hydrogenSold[n,h,i,w,gp] for (s,h) in model.HoursOfSeason) >= model.hydrogenDemand[n,i]
     # model.meet_hydrogen_demand = Constraint(model.HydrogenProdNode, model.Period, model.Scenario, model.GasScenario, rule=meet_hydrogen_demand_rule)
 
-    def hydrogen_storage_balance_rule(model, n, b, h, i, w, gp):
-        if h in model.FirstHoursOfRegSeason or h in model.FirstHoursOfPeakSeason:
-            return model.hydrogenStorageInitOperational * model.hydrogenTotalStorage[n, b, i] + \
-                model.hydrogenChargeStorage[n, b, h, i, w, gp] - model.hydrogenDischargeStorage[n, b, h, i, w, gp] - \
-                model.hydrogenStorageOperational[n, b, h, i, w, gp] == 0
-        else:
-            return model.hydrogenStorageOperational[n, b, h - 1, i, w, gp] + model.hydrogenChargeStorage[
-                n, b, h, i, w, gp] - model.hydrogenDischargeStorage[n, b, h, i, w, gp] - model.hydrogenStorageOperational[
-                n, b, h, i, w, gp] == 0
 
-    model.hydrogen_storage_balance = Constraint(model.HydrogenProdNode, model.H2Storages, model.Operationalhour, model.Period,
-                                                model.Scenario, model.GasScenario,
-                                                rule=hydrogen_storage_balance_rule)
+
+    def hydrogen_storage_balance_rule(model, n, b, h, i, w, gp):
+        """Ensure hydrogen storage continuity between consecutive hours (excluding season starts)."""
+        if h not in model.FirstHoursOfRegSeason and h not in model.FirstHoursOfPeakSeason:
+            return (
+                model.hydrogenStorageOperational[n, b, h, i, w, gp]
+                == model.hydrogenStorageOperational[n, b, h - 1, i, w, gp]
+                + model.hydrogenChargeStorage[n, b, h, i, w, gp]
+                - model.hydrogenDischargeStorage[n, b, h, i, w, gp]
+            )
+        return Constraint.Skip
+
+    model.hydrogen_storage_balance = Constraint(
+        model.HydrogenProdNode, model.H2Storages, model.Operationalhour, model.Period,
+        model.Scenario, model.GasScenario,
+        rule=hydrogen_storage_balance_rule
+    )
 
     def hydrogen_storage_operational_capacity_rule(model, n, b, h, i, w, gp):
         return model.hydrogenStorageOperational[n, b, h, i, w, gp] <= model.hydrogenTotalStorage[n, b, i]
@@ -231,10 +284,6 @@ def define_operational_hydrogen_constraints(model, industry_flag, leap_years_inv
                                                 model.Scenario, model.GasScenario,
                                                 rule=hydrogen_balance_storage_rule)
 
-    def H2import_capacity_rule(model, n, t, h, i, w, gp):
-        return model.H2Imported_ton[n, t, h, i, w, gp] <= model.H2ImportTotalCap[n, t, i]
-    model.H2import_capacity = Constraint(model.H2TerminalsOfNode, model.Operationalhour, model.Period, model.Scenario,
-                                            model.GasScenario, rule=H2import_capacity_rule)
 
     def H2import_link_ton_MWh_rule(model, n, t, h, i, w, gp):
         if (n, t) in model.H2TerminalsOfNode:
@@ -244,16 +293,7 @@ def define_operational_hydrogen_constraints(model, industry_flag, leap_years_inv
     model.H2import_link_ton_MWh = Constraint(model.H2TerminalNodes, model.H2Terminals, model.Operationalhour, model.Period, model.Scenario,
                                                 model.GasScenario, rule=H2import_link_ton_MWh_rule)
     
-        # CO2 constraints
 
-    def co2_pipeline_cap_rule(model, n1, n2, h, i, w, gp):
-        if (n1, n2) in model.CO2BidirectionalPipelines:
-            return model.CO2sentPipeline[(n1, n2), h, i, w, gp] - model.totalCO2PipelineCapacity[(n1, n2), i] <= 0
-        elif (n2, n1) in model.CO2BidirectionalPipelines:
-            return model.CO2sentPipeline[(n1, n2), h, i, w, gp] - model.totalCO2PipelineCapacity[(n2, n1), i] <= 0
-
-    model.co2_pipeline_cap = Constraint(model.CO2DirectionalLinks, model.Operationalhour, model.Period, model.Scenario,
-                                        model.GasScenario, rule=co2_pipeline_cap_rule)
 
     def co2_flow_balance_rule(model, n, h, i, w, gp):
         balance = 0
@@ -271,16 +311,9 @@ def define_operational_hydrogen_constraints(model, industry_flag, leap_years_inv
     model.co2_flow_balance = Constraint(model.OnshoreNode, model.Operationalhour, model.Period, model.Scenario,
                                         model.GasScenario, rule=co2_flow_balance_rule)
 
-    def co2_sequestering_max_hourly_capacity_rule(model, n, h, i, w, gp):
-        return model.CO2sequestered[n, h, i, w, gp] <= sum(
-            model.CO2SiteCapacityDeveloped[n, j] for j in model.Period if j <= i)
-
-    model.co2_sequestering_max_capacity = Constraint(model.CO2SequestrationNodes, model.Operationalhour, model.Period,
-                                                    model.Scenario, model.GasScenario,
-                                                    rule=co2_sequestering_max_hourly_capacity_rule)
 
     def co2_max_total_sequestration_capacity_rule(model, n, w, gp):
-        return sum(leap_years_investment * model.seasScale[s] * model.CO2sequestered[n, h, i, w, gp] for (s, h) in
+        return sum(model.leap_years_investment * model.seasScale[s] * model.CO2sequestered[n, h, i, w, gp] for (s, h) in
                 model.HoursOfSeason for i in model.Period) / 1e4 <= model.maxSequestrationCapacity[n] / 1e4
 
     model.co2_max_total_sequestration_capacity = Constraint(model.CO2SequestrationNodes, model.Scenario,
@@ -288,17 +321,17 @@ def define_operational_hydrogen_constraints(model, industry_flag, leap_years_inv
                                                             rule=co2_max_total_sequestration_capacity_rule)
 
     # Transport demand constraints
+    if transport_flag:
+        def meet_transport_elec_demand_rule(model,n,i,w,gp):
+            return sum(model.seasScale[s] * (model.transport_electricityDemandMet[n,h,i,w,gp] + model.transport_electricityDemandShed[n,h,i,w,gp]) for (s,h) in model.HoursOfSeason) == model.transport_electricity_demand[n,i]
+        model.meet_transport_elec_demand = Constraint(model.OnshoreNode, model.Period, model.Scenario, model.GasScenario, rule=meet_transport_elec_demand_rule)
 
-    def meet_transport_elec_demand_rule(model,n,i,w,gp):
-        return sum(model.seasScale[s] * (model.transport_electricityDemandMet[n,h,i,w,gp] + model.transport_electricityDemandShed[n,h,i,w,gp]) for (s,h) in model.HoursOfSeason) == model.transport_electricity_demand[n,i]
-    model.meet_transport_elec_demand = Constraint(model.OnshoreNode, model.Period, model.Scenario, model.GasScenario, rule=meet_transport_elec_demand_rule)
+        def meet_transport_hydrogen_demand_rule(model,n,i,w,gp):
+            return sum(model.seasScale[s] * (model.transport_hydrogenDemandMet[n,h,i,w,gp] + model.transport_hydrogenDemandShed[n,h,i,w,gp]) for (s,h) in model.HoursOfSeason) == model.transport_hydrogen_demand[n,i] / Constants.hydrogen_MWhPerTon
+        model.meet_transport_hydrogen_demand = Constraint(model.OnshoreNode, model.Period, model.Scenario, model.GasScenario, rule=meet_transport_hydrogen_demand_rule)
 
-    def meet_transport_hydrogen_demand_rule(model,n,i,w,gp):
-        return sum(model.seasScale[s] * (model.transport_hydrogenDemandMet[n,h,i,w,gp] + model.transport_hydrogenDemandShed[n,h,i,w,gp]) for (s,h) in model.HoursOfSeason) == model.transport_hydrogen_demand[n,i] / Constants.hydrogen_MWhPerTon
-    model.meet_transport_hydrogen_demand = Constraint(model.OnshoreNode, model.Period, model.Scenario, model.GasScenario, rule=meet_transport_hydrogen_demand_rule)
-
-    def meet_transport_naturalGas_demand_rule(model,n,i,w,gp):
-        return sum(model.seasScale[s] * (model.transport_naturalGasDemandMet[n,h,i,w,gp] + model.transport_naturalGasDemandShed[n,h,i,w,gp]) for (s,h) in model.HoursOfSeason) == model.transport_naturalGas_demand[n,i] / Constants.ng_MWhPerTon
-    model.meet_transport_naturalGas_demand = Constraint(model.OnshoreNode, model.Period, model.Scenario, model.GasScenario, rule=meet_transport_naturalGas_demand_rule)
+        def meet_transport_naturalGas_demand_rule(model,n,i,w,gp):
+            return sum(model.seasScale[s] * (model.transport_naturalGasDemandMet[n,h,i,w,gp] + model.transport_naturalGasDemandShed[n,h,i,w,gp]) for (s,h) in model.HoursOfSeason) == model.transport_naturalGas_demand[n,i] / Constants.ng_MWhPerTon
+        model.meet_transport_naturalGas_demand = Constraint(model.OnshoreNode, model.Period, model.Scenario, model.GasScenario, rule=meet_transport_naturalGas_demand_rule)
 
 

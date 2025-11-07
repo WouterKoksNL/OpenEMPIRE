@@ -8,7 +8,11 @@ def add_natural_gas_electric_demand(model, flow, n, h, i, w, gp):
     return flow
 
 def define_operational_natural_gas_constraints(model, leap_years_investment, hydrogen, industry):
-    """Defines the operational constraints for natural gas in the model."""
+    """Defines the operational constraints for natural gas in the model.
+    No constraints relevant for Benders. """
+
+
+
     def naturalGas_terminal_capacity_rule(model, n, t, h, i, w, gp):
         return model.ng_terminalImport[n,t,h,i,w,gp] <= model.ng_terminalCapacity[n,t,i]
     model.naturalGas_terminal_capacity = Constraint(model.NaturalGasTerminalsOfNode, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, rule=naturalGas_terminal_capacity_rule)
@@ -51,7 +55,7 @@ def define_operational_natural_gas_constraints(model, leap_years_investment, hyd
         model.NaturalGasNode, model.Operationalhour, model.Period, model.Scenario, model.GasScenario,
         rule=naturalGas_storage_balance_rule
     )
-    
+
     def naturalGas_Storage_maxCapacity_rule(model, n, h, i, w, gp):
         return model.ng_storageOperational[n,h,i,w,gp] / 1e3 <= model.ng_storageCapacity[n] / 1e3
     model.naturalGas_storage_maxCapacity = Constraint(model.NaturalGasNode, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, rule=naturalGas_Storage_maxCapacity_rule)

@@ -1,6 +1,8 @@
 
 from pyomo.environ import Param, DataPortal
 
+from empire.core.loading_utils import load_parameters
+
 def define_hydrogen_operational_parameters(model):
 
     model.elyzerPowerConsumptionPerTon = Param(model.Period, default=99999, mutable=True)
@@ -24,33 +26,50 @@ def define_hydrogen_operational_parameters(model):
     model.transport_curtail_cost = Param(default=10000, mutable=True)
     model.CO2PipelineElectricityUsage = Param(default=99999, mutable=True)
 
-def load_hydrogen_operational_parameter_data(data: DataPortal, tab_file_path, model):
-    """Load hydrogen operational parameter data from tab files.
+
+def load_hydrogen_operational_parameter_data(data: DataPortal, dataset_dir, model, filtering_dict=None, enable_transport=False):
+    """Load hydrogen and optionally transport operational parameter data.
     
     Args:
         data: Pyomo DataPortal object
-        tab_file_path: Path to directory containing tab files
-        model: Pyomo model with parameters already defined
+        dataset_dir: Path to dataset input directory
+        model: AbstractModel
+        filtering_dict: Optional dict for filtering data to load. Keys are column names, values are lists of accepted values.
+        enable_transport: Whether to load transport parameters
     """
-    # Electrolyzer operational parameters
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_ElectrolyzerPowerUse.tab', format="table", param=model.elyzerPowerConsumptionPerTon)
-    
-    # Terminal operational parameters
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_H2TerminalPrice.tab', format="table", param=model.H2TerminalPrice)
 
-    # Pipeline operational parameters
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_PipelineCompressorPowerUsage.tab', format="table", param=model.hydrogenPipelineCompressorElectricityUsage)
-    
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_ReformerVariableOMCost.tab', format='table', param=model.ReformerPlantVarOMCost)
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_ReformerEfficiency.tab', format='table', param=model.ReformerPlantEfficiency)
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_ReformerElectricityUse.tab', format='table', param=model.ReformerPlantElectricityUse)
+    hydrogen_param_list = [
+        'elyzerPowerConsumptionPerTon',
+        'H2TerminalPrice',
+        'hydrogenPipelineCompressorElectricityUsage',
+        'ReformerPlantVarOMCost',
+        'ReformerPlantEfficiency',
+        'ReformerPlantElectricityUse',
+        'ReformerEmissionFactor',
+        'ReformerCO2CaptureFactor',
+        'CO2PipelineElectricityUsage',
+    ]
 
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_ReformerEmissionFactor.tab', format='table', param=model.ReformerEmissionFactor)
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_ReformerCO2CaptureFactor.tab', format='table', param=model.ReformerCO2CaptureFactor)
-    data.load(filename=tab_file_path + '/' + 'CO2_PipelineElectricityUsage.tab', format="table", param=model.CO2PipelineElectricityUsage)
+    load_parameters(
+        data,
+        full_path=dataset_dir/ 'Hydrogen',
+        param_name_list=hydrogen_param_list,
+        model=model,
+        filtering_dict=filtering_dict
+    )
 
-    # Transport demand parameters
-    data.load(filename=tab_file_path + '/' + 'Transport_ElectricityDemand.tab', param=model.transport_electricity_demand, format='table')
-    data.load(filename=tab_file_path + '/' + 'Transport_HydrogenDemand.tab', param=model.transport_hydrogen_demand, format='table')
-    data.load(filename=tab_file_path + '/' + 'Transport_NaturalGasDemand.tab', param=model.transport_naturalGas_demand, format='table')
-    data.load(filename=tab_file_path + '/' + 'Transport_CurtailCost.tab', param=model.transport_curtail_cost, format='table')
+    if enable_transport:
+        transport_param_list = [
+            'transport_electricity_demand',
+            'transport_hydrogen_demand',
+            'transport_naturalGas_demand',
+            'transport_curtail_cost',
+        ]
+
+        load_parameters(
+            data,
+            full_path=dataset_dir / 'Transport',
+            param_name_list=transport_param_list,
+            model=model,
+            filtering_dict=filtering_dict
+        )
