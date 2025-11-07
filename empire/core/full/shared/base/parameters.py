@@ -46,7 +46,7 @@ def define_base_shared_parameters(model, empire_config: EmpireConfiguration):
     model.gas_h2_repurpose_cost_factor = Param(initialize=empire_config.gas_h2_repurpose_cost_factor)
 
 
-def load_base_shared_parameter_data(data, dataset_dir, model, period=None, scenario=None):
+def load_base_shared_parameter_data(data, dataset_dir, model, filtering_dict=None):
     """Load shared parameter data. Optionally filter by period and scenario (for Benders).
     """
     params = {
@@ -71,5 +71,5 @@ def load_base_shared_parameter_data(data, dataset_dir, model, period=None, scena
             full_path=dataset_dir / component,
             param_name_list=param_list,
             model=model,
-            filtering_dict={"Period": period, "Scenario": scenario}
+            filtering_dict=filtering_dict
         )

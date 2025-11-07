@@ -15,12 +15,12 @@ def define_shared_parameters(model, empire_config, flags):
 
 
 
-        
-def load_shared_parameter_data(data, dataset_dir, model, flags, period=None, scenario=None):
-    load_base_shared_parameter_data(data, dataset_dir, model, period=period, scenario=scenario)
+
+def load_shared_parameter_data(data, dataset_dir, model, flags, filtering_dict=None):
+    load_base_shared_parameter_data(data, dataset_dir, model, filtering_dict=filtering_dict)
 
     if flags.heat:
-        load_heat_shared_parameter_data(data, dataset_dir, model, period=period, scenario=scenario)
+        load_heat_shared_parameter_data(data, dataset_dir, model, filtering_dict=filtering_dict)
 
 
 

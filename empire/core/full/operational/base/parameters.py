@@ -56,7 +56,7 @@ def define_base_operational_parameters(model, use_cvar=False, cvar_percentile=No
 
 
 
-def load_base_operational_parameter_data(data, dataset_dir, model, period=None, scenario=None):
+def load_base_operational_parameter_data(data, dataset_dir, model, filtering_dict=None):
     """Load operational parameter data from tab files.
     
     Args:
@@ -92,31 +92,25 @@ def load_base_operational_parameter_data(data, dataset_dir, model, period=None, 
             full_path=dataset_dir / component,
             param_name_list=param_list,
             model=model,
-            filtering_dict={"Period": period, "Scenario": scenario}
+            filtering_dict=filtering_dict
         )
 
 
 def load_base_stochastic_parameter_data(
         data, 
+        stochastic_input_dir,
         dataset_dir, 
         model,
-        out_of_sample_flag=False, 
-        sample_file_path=None,
-        period=None,
-        scenario=None,
+        filtering_dict,
         ) -> None:
-    
-
-    input_dir = (dataset_dir / "Stochastic" if not out_of_sample_flag else sample_file_path)
-
     
     generators_of_node_df = pd.read_csv(dataset_dir / "Sets" / "GeneratorsOfNode.csv")
     load_parameter(
             data,
-            full_path=dataset_dir / "Stochastic",
+            full_path=stochastic_input_dir,
             param_name="genCapAvailStochRaw",
             param=getattr(model, "genCapAvailStochRaw"),
-            filtering_dict={("Node", "Generator"): generators_of_node_df, "Period": period, "Scenario": scenario},
+            filtering_dict={("Node", "Generator"): generators_of_node_df, **filtering_dict},
     )
     stochastic_variables = [
             "sloadRaw",
@@ -124,10 +118,10 @@ def load_base_stochastic_parameter_data(
         ]
     load_parameters(
             data,
-            full_path=input_dir,
+            full_path=stochastic_input_dir,
             param_name_list=stochastic_variables,
             model=model,
-            filtering_dict={"Period": period, "Scenario": scenario}
+            filtering_dict=filtering_dict
         )
     
 

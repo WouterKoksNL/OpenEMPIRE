@@ -63,7 +63,7 @@ def define_base_investment_parameters(model, offshore_wind=True):
 
 
 
-def load_base_investment_parameter_data(data, dataset_dir, model, period=None, scenario=None, offshore_wind=True):
+def load_base_investment_parameter_data(data, dataset_dir, model, filtering_dict=None, offshore_wind=True):
     """Load investment parameter data from tab files.
     
     Args:
@@ -121,5 +121,5 @@ def load_base_investment_parameter_data(data, dataset_dir, model, period=None, s
             full_path=dataset_dir / component,
             param_name_list=param_list,
             model=model,
-            filtering_dict={"Period": period, "Scenario": scenario}
+            filtering_dict=filtering_dict
         )

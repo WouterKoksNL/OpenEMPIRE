@@ -20,25 +20,23 @@ def define_operational_parameters(model, flags, cvar_percentile, cvar_weight):
         define_natural_gas_parameters(model)
 
 
-def load_operational_parameter_data(data, dataset_dir, model, flags, period=None, scenario=None, 
-                                    out_of_sample_flag=False, sample_file_path=None):
-
+def load_operational_parameter_data(data, dataset_dir, stochastic_input_dir, model, flags, filtering_dict=None):
     
     # Load operational parameter data
-    load_base_operational_parameter_data(data, dataset_dir, model, period=period, scenario=scenario)
+    load_base_operational_parameter_data(data, dataset_dir, model, filtering_dict)
     
     # Load stochastic parameter data
 
-    load_base_stochastic_parameter_data(data, dataset_dir, model, out_of_sample_flag, sample_file_path, period, scenario)
+    load_base_stochastic_parameter_data(data, stochastic_input_dir, dataset_dir, model, filtering_dict)
 
     if flags.natural_gas:
-        load_natural_gas_parameter_data(data, dataset_dir, model, flags.gas_stochasticity, period=period, scenario=scenario)
+        load_natural_gas_parameter_data(data, dataset_dir, model, flags.gas_stochasticity, filtering_dict)
 
     if flags.heat:
-        load_heat_operational_parameter_data(data, dataset_dir, model, period=period, scenario=scenario)
+        load_heat_operational_parameter_data(data, dataset_dir, model, ...)
 
     if flags.hydrogen:
-        load_hydrogen_operational_parameter_data(data, dataset_dir, model, period=period, scenario=scenario)
+        load_hydrogen_operational_parameter_data(data, dataset_dir, model, filtering_dict, enable_transport=flags.transport)
 
     if flags.industry:
-        load_industry_operational_parameter_data(data, dataset_dir, model, period=period, scenario=scenario)
+        load_industry_operational_parameter_data(data, dataset_dir, model, ...)

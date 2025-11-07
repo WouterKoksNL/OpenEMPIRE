@@ -85,7 +85,8 @@ def run_empire(
     define_shared_sets(model, periods_active, windfarmNodes, flags)
     define_operational_sets(model, operational_input_params, flags)
     
-    
+    filtering_dict = {"Period": periods_active}
+
     data = DataPortal()
     load_shared_set_data(data, dataset_dir, model, flags, load_period=False, periods_active=periods_active)
     define_shared_derived_sets(model, offshoreNodesList, flags)  # must be before operational parameter loading 
@@ -93,9 +94,10 @@ def run_empire(
     define_operational_parameters(model, flags, empire_config.cvar_percentile, empire_config.cvar_weight)
     define_shared_parameters(model, empire_config, flags)
 
-    load_shared_parameter_data(data, dataset_dir, model, flags, period=periods_active)
-    load_operational_parameter_data(data, dataset_dir, model, flags, out_of_sample_flag=out_of_sample_flag, sample_file_path=sample_file_path, period=periods_active)
-    load_investment_parameter_data(data, dataset_dir, model, flags, period=periods_active)
+    load_shared_parameter_data(data, dataset_dir, model, flags, filtering_dict=filtering_dict)
+    stochastic_input_dir = (dataset_dir / "Stochastic" if not out_of_sample_flag else sample_file_path)
+    load_operational_parameter_data(data, stochastic_input_dir, dataset_dir, model, flags, filtering_dict=filtering_dict)
+    load_investment_parameter_data(data, dataset_dir, model, flags, filtering_dict=filtering_dict)
   
     
     # Variable definitions

@@ -72,7 +72,7 @@ def load_parameter(
     full_path: Path,
     param_name: str,
     param: Param,
-    filtering_dict: dict[str | tuple[str], list | int | str | pd.DataFrame] = {},
+    filtering_dict: None | dict[str | tuple[str], list | int | str | pd.DataFrame],
     # period: int | list[int] | None = None,
     # scenario: str | list[str] | None = None,
 ) -> None:
@@ -82,8 +82,9 @@ def load_parameter(
     If no periods or scenarios are specified (periods_to_load is None and scenarios_to_load is None), loads all data.
     """
     df = get_df(full_path=full_path, param_name=param_name)
-    for col_name, values in filtering_dict.items():
-        df = filter_by_column(df, col_name=col_name, values=values)
+    if filtering_dict is not None:
+        for col_name, values in filtering_dict.items():
+            df = filter_by_column(df, col_name=col_name, values=values)
     load_parameter_from_df(data, df, param)
     return
 
@@ -92,7 +93,7 @@ def load_parameters(
     full_path: Path,
     param_name_list: list[str],
     model: AbstractModel,
-    filtering_dict: dict[str | tuple[str], list | int | pd.DataFrame] = {},
+    filtering_dict: None | dict[str | tuple[str], list | int | pd.DataFrame],
 ) -> None:
     for param_name in param_name_list:
         load_parameter(

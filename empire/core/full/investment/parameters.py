@@ -16,15 +16,15 @@ def define_investment_parameters(model, flags):
         define_industry_investment_parameters(model)
 
 
-def load_investment_parameter_data(data, dataset_dir, model, flags, period=None):
+def load_investment_parameter_data(data, dataset_dir, model, flags, filtering_dict=None):
     # Load investment parameter data
-    load_base_investment_parameter_data(data, dataset_dir, model, period=period)
+    load_base_investment_parameter_data(data, dataset_dir, model, filtering_dict=filtering_dict)
 
     if flags.hydrogen:
-        load_hydrogen_investment_parameter_data(data, dataset_dir, model, period=period)
+        load_hydrogen_investment_parameter_data(data, dataset_dir, model, filtering_dict=filtering_dict)
 
     if flags.heat:
-        load_heat_investment_parameter_data(data, dataset_dir, model, period=period)
+        load_heat_investment_parameter_data(data, dataset_dir, model, filtering_dict=filtering_dict)
 
     if flags.industry:
-        load_industry_investment_parameter_data(data, dataset_dir, model, period=period)
+        load_industry_investment_parameter_data(data, dataset_dir, model, filtering_dict=filtering_dict)
