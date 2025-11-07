@@ -82,7 +82,7 @@ def define_base_operational_expressions(
         
         flow = sum((model.storageDischargeEff[b]*model.storDischarge[n,b,h,i,w,gp]-model.storCharge[n,b,h,i,w,gp]) for b in model.Storage if (n,b) in model.StoragesOfNode) \
                 + sum((model.lineEfficiency[link,n]*model.transmissionOperational[link,n,h,i,w,gp] - model.transmissionOperational[n,link,h,i,w,gp]) for link in model.NodesLinked[n]) \
-                - model.sload[n,h,i,w,gp] + model.loadShed[n,h,i,w,gp]
+                - model.sload[n,h,i,w] + model.loadShed[n,h,i,w,gp]
 
         if flags.heat:
             flow = add_heat_electric_demand(model, flow, n, h, i, w, gp)
@@ -148,17 +148,16 @@ def derive_instance_base_stochastic_parameters(instance: ConcreteModel, node_uns
 
     def _set_sload(instance, node_unscaled_yearly_demand_ser=None):
         # Precompute cutoff
-        cutoff = list(instance.FirstHoursOfRegSeason)[-1] + instance.lengthRegSeason
+        cutoff = list(instance.FirstHoursOfRegSeason)[-1] + instance.length_reg_season
         for n in instance.Node:
             for i in instance.Period:
                 # Compute probability-weighted raw demand
                 if node_unscaled_yearly_demand_ser is None:
                     node_unscaled_yearly_demand = value(sum(
-                        instance.sceProbab[w] * instance.GasSceProbab[gp] * instance.seasScale[s] * instance.sloadRaw[i, w, n, h]
+                        instance.sceProbab[w] * instance.seasScale[s] * instance.sloadRaw[i, w, n, h]
                         for (s, h) in instance.HoursOfSeason
                         # if h < cutoff  # adjust if you want peak hours included
                         for w in instance.Scenario
-                        for gp in instance.GasScenario
                     ))
                 elif isinstance(node_unscaled_yearly_demand_ser, pd.Series):
                     node_unscaled_yearly_demand = node_unscaled_yearly_demand_ser.loc[n]
@@ -169,7 +168,7 @@ def derive_instance_base_stochastic_parameters(instance: ConcreteModel, node_uns
 
                 for w in instance.Scenario:
                     for h in instance.Operationalhour:
-                        instance.sload[i, w, n, h] = instance.sloadRaw[i, w, n, h] * hourlyscale 
+                        instance.sload[n,h,i,w] = instance.sloadRaw[i, w, n, h] * hourlyscale
 
     
     _set_sload(instance, node_unscaled_yearly_demand_ser)
@@ -179,11 +178,11 @@ def derive_instance_base_stochastic_parameters(instance: ConcreteModel, node_uns
         for (n, g) in instance.GeneratorsOfNode:
             for h in instance.Operationalhour:
                 for w in instance.Scenario:
-                    for i in instance.PeriodActive:
-                        if instance.genCapAvailTypeRaw[g] < 1e-8:
+                    for i in instance.Period:
+                        if value(instance.genCapAvailTypeRaw[g]) < 1e-8:
                             raise ValueError(f"Generator {g} has zero available capacity. For now datasets the genCapAvailTypeRaw of stochastic generators should be set to 1.")
-                        instance.genCapAvail[n, g, h, i, w] = (
-                            instance.genCapAvailTypeRaw[g] * instance.genCapAvailStochRaw[n, g, h, i, w]
+                        instance.genCapAvail[n, g, h, w, i] = (
+                            instance.genCapAvailTypeRaw[g] * instance.genCapAvailStochRaw[i, w, n, g, h]
                         )
     _set_genCapAvail(instance)
 

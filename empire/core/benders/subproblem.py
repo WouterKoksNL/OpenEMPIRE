@@ -113,7 +113,7 @@ def load_data(
     data = DataPortal()
     load_shared_sets(model, data, paths.dataset_path, empire_config.north_sea_flag, load_period=False)
     load_set_directly(data, model.Period, period)
-    load_set_directly(data, model.PeriodActive, period)
+    load_set_directly(data, model.Period, period)
     load_set_directly(data, model.Scenario, scenario)
 
     load_shared_parameters(model, data, paths.dataset_path)

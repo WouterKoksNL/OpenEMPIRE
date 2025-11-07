@@ -1021,11 +1021,11 @@ def generate_random_scenario(
 
     # Make header for .tab-file
     genAvail = genAvail[
-        ["Node", "Generator", "Operationalhour", "Period", "Scenario", "GeneratorStochasticAvailabilityRaw"]
+        ["Period","Scenario","Node", "Generator", "Operationalhour",   "GeneratorStochasticAvailabilityRaw"]
     ]
     elecLoad = elecLoad[["Period", "Scenario", "Node", "Operationalhour", "ElectricLoadRaw_in_MW"]]
     hydroSeasonal = hydroSeasonal[
-        ["Node", "Period", "Season", "Operationalhour", "Scenario", "HydroGeneratorMaxSeasonalProduction"]
+        ["Period","Scenario", "Node", "Season", "Operationalhour", "HydroGeneratorMaxSeasonalProduction"]
     ]
 
     genAvail.loc[genAvail["GeneratorStochasticAvailabilityRaw"] <= 0.001, "GeneratorStochasticAvailabilityRaw"] = 0

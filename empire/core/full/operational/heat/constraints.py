@@ -3,6 +3,7 @@ from pyomo.environ import Constraint
 
 
 def define_operational_heat_constraints(model):
+    raise NotImplementedError("Need to remove gp from fixed parameters like sloadTR, if its fixed.")
     # capacity-dependent: to be included in the benders cut
     def ConverterConv_rule(model, n, r, h, i, w, gp):
         return model.ConverterOperational[n,r,h,i,w,gp] - model.ConverterInstalledCap[n,r,i] <= 0

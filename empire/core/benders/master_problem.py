@@ -61,19 +61,19 @@ def create_master_problem_instance(
 
     # Benders specific
     model.Scenario = Set(initialize=scenarios if scenarios is not None else [])
-    model.theta = Var(model.PeriodActive, model.Scenario, within=NonNegativeReals)
+    model.theta = Var(model.Period, model.Scenario, within=NonNegativeReals)
 
     # objective
-    model.discount_multiplier = Expression(model.PeriodActive, rule=multiplier_rule)  # must be specified before defining objective
+    model.discount_multiplier = Expression(model.Period, rule=multiplier_rule)  # must be specified before defining objective
 
     def Obj_rule(model):
         obj = investment_obj(model) + \
-            sum(model.theta[i, s] for i in model.PeriodActive for s in model.Scenario)
+            sum(model.theta[i, s] for i in model.Period for s in model.Scenario)
         # Regularization: penalize deviation from previous iteration capacities
         # weight can be tuned; smaller = softer stabilization
         # if regularization_flag and capacity_params is not None:
 
-        #     for period in model.PeriodActive:
+        #     for period in model.Period:
         #         # Generators
 
         #         for (n, g) in model.GeneratorsOfNode:
@@ -158,10 +158,10 @@ def extract_capacity_params(mp_instance) -> dict[str, dict[tuple, float]]:
 
     capacity_params = {}
 
-    capacity_params['genInstalledCap'] = {(*ng, period): mp_instance.genInstalledCap[ng, period].value for ng in mp_instance.GeneratorsOfNode for period in mp_instance.PeriodActive}
-    capacity_params['storENInstalledCap'] = {(*nb, period): mp_instance.storENInstalledCap[nb, period].value for nb in mp_instance.StoragesOfNode for period in mp_instance.PeriodActive}
-    capacity_params['storPWInstalledCap'] = {(*nb, period): mp_instance.storPWInstalledCap[nb, period].value for nb in mp_instance.StoragesOfNode for period in mp_instance.PeriodActive}
-    capacity_params['transmissionInstalledCap'] = {(*line_pair, period): mp_instance.transmissionInstalledCap[line_pair, period].value for line_pair in mp_instance.BidirectionalArc for period in mp_instance.PeriodActive}
+    capacity_params['genInstalledCap'] = {(*ng, period): mp_instance.genInstalledCap[ng, period].value for ng in mp_instance.GeneratorsOfNode for period in mp_instance.Period}
+    capacity_params['storENInstalledCap'] = {(*nb, period): mp_instance.storENInstalledCap[nb, period].value for nb in mp_instance.StoragesOfNode for period in mp_instance.Period}
+    capacity_params['storPWInstalledCap'] = {(*nb, period): mp_instance.storPWInstalledCap[nb, period].value for nb in mp_instance.StoragesOfNode for period in mp_instance.Period}
+    capacity_params['transmissionInstalledCap'] = {(*line_pair, period): mp_instance.transmissionInstalledCap[line_pair, period].value for line_pair in mp_instance.BidirectionalArc for period in mp_instance.Period}
 
     return capacity_params
 
@@ -170,8 +170,8 @@ def define_initial_capacity_params(mp_instance, base_value=1e3) -> dict[str, dic
     """Initialize capacity params as nested defaultdicts with base_value as default."""
     capacity_params = {}
 
-    capacity_params['genInstalledCap'] = {(*ng, period): base_value for ng in mp_instance.GeneratorsOfNode for period in mp_instance.PeriodActive}
-    capacity_params['storENInstalledCap'] = {(*nb, period): base_value for nb in mp_instance.StoragesOfNode for period in mp_instance.PeriodActive}
-    capacity_params['storPWInstalledCap'] = {(*nb, period): base_value for nb in mp_instance.StoragesOfNode for period in mp_instance.PeriodActive}
-    capacity_params['transmissionInstalledCap'] = {(*line_pair, period): base_value for line_pair in mp_instance.BidirectionalArc for period in mp_instance.PeriodActive}
+    capacity_params['genInstalledCap'] = {(*ng, period): base_value for ng in mp_instance.GeneratorsOfNode for period in mp_instance.Period}
+    capacity_params['storENInstalledCap'] = {(*nb, period): base_value for nb in mp_instance.StoragesOfNode for period in mp_instance.Period}
+    capacity_params['storPWInstalledCap'] = {(*nb, period): base_value for nb in mp_instance.StoragesOfNode for period in mp_instance.Period}
+    capacity_params['transmissionInstalledCap'] = {(*line_pair, period): base_value for line_pair in mp_instance.BidirectionalArc for period in mp_instance.Period}
     return capacity_params

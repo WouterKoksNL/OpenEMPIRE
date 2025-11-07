@@ -41,7 +41,7 @@ def define_base_operational_constraints(model, EMISSION_CAP, flags: Flags):
     #################################################################
 
     def shed_limit_rule(model,n,h,i,w,gp):
-        return model.loadShed[n,h,i,w,gp] <= model.sload[n,h,i,w,gp]
+        return model.loadShed[n,h,i,w,gp] <= model.sload[n,h,i,w]
     # model.shed_limit = Constraint(model.Node, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, rule=shed_limit_rule)
 
     #################################################################
@@ -104,7 +104,7 @@ def define_base_operational_constraints(model, EMISSION_CAP, flags: Flags):
 
     def hydro_gen_limit_rule(model, n, g, s, i, w, gp):
         if g in model.RegHydroGenerator:
-            return sum(model.genOperational[n,g,h,i,w,gp] for h in model.Operationalhour if (s,h) in model.HoursOfSeason) - model.maxRegHydroGen[n,i,s,w] <= 0
+            return sum(model.genOperational[n,g,h,i,w,gp] for h in model.Operationalhour if (s,h) in model.HoursOfSeason) - model.maxRegHydroGen[i,w,n,s] <= 0
         else:
             return Constraint.Skip  #
     model.hydro_gen_limit = Constraint(model.GeneratorsOfNode, model.Season, model.Period, model.Scenario, model.GasScenario, rule=hydro_gen_limit_rule)

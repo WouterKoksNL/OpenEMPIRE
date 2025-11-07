@@ -41,11 +41,11 @@ def define_base_operational_parameters(model, use_cvar=False, cvar_percentile=No
     # Stochastic input
     model.sloadRaw = Param(model.Period, model.Scenario, model.Node, model.Operationalhour, default=0.0, mutable=True)
     model.sloadAnnualDemand = Param(model.Node, model.Period, default=0.0, mutable=True)
-    model.sload = Param(model.Node, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, default=0.0, mutable=True)
-    model.genCapAvailStochRaw = Param(model.GeneratorsOfNode, model.Operationalhour, model.Period, model.Scenario, default=0.0, mutable=True)
+    model.sload = Param(model.Node, model.Operationalhour, model.Period, model.Scenario, default=0.0, mutable=True)
+    model.genCapAvailStochRaw = Param(model.Period, model.Scenario, model.GeneratorsOfNode, model.Operationalhour, default=0.0, mutable=True)
     model.genCapAvail = Param(model.GeneratorsOfNode, model.Operationalhour, model.Scenario, model.Period, default=0.0, mutable=True)
-    model.maxRegHydroGenRaw = Param(model.Node, model.Period, model.HoursOfSeason, model.Scenario, default=1.0, mutable=True)
-    model.maxRegHydroGen = Param(model.Node, model.Period, model.Season, model.Scenario, default=1.0, mutable=True)
+    model.maxRegHydroGenRaw = Param(model.Period, model.Scenario, model.Node, model.HoursOfSeason, default=1.0, mutable=True)
+    model.maxRegHydroGen = Param(model.Period, model.Scenario, model.Node, model.Season, default=1.0, mutable=True)
     model.maxHydroNode = Param(model.Node, default=0.0, mutable=True)
     
     # CVaR module parameters (conditional)
