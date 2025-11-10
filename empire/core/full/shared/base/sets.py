@@ -7,7 +7,6 @@ def define_base_shared_sets(model, windfarmNodes=None):
     
     Args:
         model: Pyomo abstract model
-        Period: List of periods
         windfarmNodes: List of windfarm nodes (optional)
     """
     
@@ -70,7 +69,7 @@ def load_base_shared_set_data(data, dataset_dir, model, load_period=True, period
     
 
     if load_period:
-        input_sets.append("Period")
+        # input_sets.append("Period")
         load_set_directly(data, model.Period, periods_active)
         
     load_sets(data, model, dataset_dir, input_sets)
