@@ -10,3 +10,4 @@ class Flags:
     cvar: bool
     gas_stochasticity: bool
     out_of_sample: bool
+    transport: bool
