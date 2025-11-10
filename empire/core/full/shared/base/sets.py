@@ -2,7 +2,7 @@
 from pyomo.environ import Set
 from empire.core.loading_utils import load_sets, load_set_directly
 
-def define_base_shared_sets(model, Period, windfarmNodes=None):
+def define_base_shared_sets(model, windfarmNodes=None):
     """Define sets that are shared across investment and operational modules.
     
     Args:
@@ -12,7 +12,7 @@ def define_base_shared_sets(model, Period, windfarmNodes=None):
     """
     
     # Temporal sets
-    model.Period = Set(ordered=True, initialize=Period)  # i
+    model.Period = Set(ordered=True)  # i
 
     # Spatial sets - basic
     model.Node = Set(ordered=True)  # n

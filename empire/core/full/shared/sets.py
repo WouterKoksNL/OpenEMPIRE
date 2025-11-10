@@ -13,7 +13,7 @@ def define_shared_sets(
         flags: Flags
     ):
     # Define shared sets (common across all modules)
-    define_base_shared_sets(model, Period, windfarmNodes)
+    define_base_shared_sets(model, windfarmNodes)
 
 
     if flags.heat:
@@ -26,7 +26,7 @@ def define_shared_sets(
         define_industry_sets(model)
 
 
-def load_shared_set_data(data, dataset_dir, model, flags: Flags, load_period=False, periods_active=None):
+def load_shared_set_data(data, dataset_dir, model, flags: Flags, load_period, periods_active):
     print("NOT SURE IF SHOULD LOAD PERIOD HERE")
     load_base_shared_set_data(data, dataset_dir, model, load_period=load_period, periods_active=periods_active)
     

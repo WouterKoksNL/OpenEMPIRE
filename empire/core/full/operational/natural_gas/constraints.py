@@ -109,4 +109,22 @@ def define_operational_natural_gas_constraints(model, leap_years_investment, hyd
             return Constraint.Skip
     model.naturalGas_for_power = Constraint(model.NaturalGasNode, model.NaturalGasGenerators, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, rule=naturalGas_for_power_rule)
 
+    
+    def max_bio_availability_rule(model, i, w, gp):
+        bio_use = 0
+
+        for n in model.NaturalGasNode:
+            for g in model.Generator:
+                if (n,g) in model.GeneratorsOfNode:
+                    if 'bio' in g.lower():
+                        if 'cofiring' in g.lower():
+                            bio_use += sum(model.seasScale[s] * 0.1 * model.genOperational[n,g,h,i,w,gp] / model.genEfficiency[g,i] * Constants.GJperMWh for (s,h) in model.HoursOfSeason)
+                        else:
+                            bio_use += sum(model.seasScale[s] * model.genOperational[n,g,h,i,w,gp] / model.genEfficiency[g,i] * Constants.GJperMWh for (s,h) in model.HoursOfSeason)
+            if industry:
+                for n in model.SteelProducers:
+                    bio_use += sum(model.seasScale[s] * model.steel_bioConsumption[p,i] * model.steelProduced[n,p,h,i,w,gp] for p in model.SteelPlants for (s,h) in model.HoursOfSeason)
+        return bio_use <= model.availableBioEnergy[i]
+    # model.max_bio_availability = Constraint(model.Period, model.Scenario, model.GasScenario, rule=max_bio_availability_rule)
+
     return 

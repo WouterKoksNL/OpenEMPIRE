@@ -72,7 +72,6 @@ def load_base_investment_parameter_data(data, dataset_dir, model, filtering_dict
         model: Pyomo model with parameters already defined
     """
 
-
     input_parameters = {
         "Generator": [
             "genCapitalCost",

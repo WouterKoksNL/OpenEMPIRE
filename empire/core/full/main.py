@@ -65,6 +65,7 @@ def run_empire(
         sample_file_path: Path | None = None,
         ) -> tuple[float, ConcreteModel] | None:
     dataset_dir = paths.dataset_path
+    filtering_dict = {"Period": periods_active}
     windfarmNodes = None
     offshoreNodesList = []
     flags = Flags(
@@ -82,13 +83,13 @@ def run_empire(
 
     model = AbstractModel()
     
-    define_shared_sets(model, periods_active, windfarmNodes, flags)
+    define_shared_sets(model, windfarmNodes, flags)
     define_operational_sets(model, operational_input_params, flags)
     
     filtering_dict = {"Period": periods_active}
 
     data = DataPortal()
-    load_shared_set_data(data, dataset_dir, model, flags, load_period=False, periods_active=periods_active)
+    load_shared_set_data(data, dataset_dir, model, flags, load_period=True, periods_active=periods_active)
     define_shared_derived_sets(model, offshoreNodesList, flags)  # must be before operational parameter loading 
     define_investment_parameters(model, flags)
     define_operational_parameters(model, flags, empire_config.cvar_percentile, empire_config.cvar_weight)
@@ -113,7 +114,7 @@ def run_empire(
     define_operational_variables(model, flags)
     
     define_operational_expressions(model, empire_config, paths.results_path, flags)
-    define_investment_expressions(model, empire_config, periods_active, flags)
+    define_investment_expressions(model, empire_config, flags)
     define_shared_expressions(model, flags)
 
     define_objective(model, empire_config)
