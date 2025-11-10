@@ -30,8 +30,6 @@ def define_base_shared_parameters(model, empire_config: EmpireConfiguration):
     model.nodeLostLoadCost = Param(model.Node, model.Period, default=22000.0)
     model.CO2price = Param(model.Period, default=0.0, mutable=True)
     
-    # Available resources
-    model.availableBioEnergy = Param(model.Period, default=0, mutable=True)
     
     # Emission cap (conditional)
     if empire_config.emission_cap_flag:
@@ -61,9 +59,9 @@ def load_base_shared_parameter_data(data, dataset_dir, model, filtering_dict=Non
     }
 
     if hasattr(model, 'CO2cap'):
-        params["General"].append("CO2cap")
+        params["General"] = ["CO2cap"]
     else:
-        params["General"].append("CO2price")
+        params["General"] = ["CO2price"]
 
     for component, param_list in params.items():
         load_parameters(
