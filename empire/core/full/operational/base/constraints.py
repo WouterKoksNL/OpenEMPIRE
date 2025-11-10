@@ -124,17 +124,6 @@ def define_base_operational_constraints(model, EMISSION_CAP, flags: Flags):
         model.emission_cap = Constraint(model.Period, model.Scenario, model.GasScenario, rule=emission_cap_rule)
 
 
-    
-    # GD: Ensuring that power sent from offshore hub is no greater than its capacity
-    def offshore_hub_capacity_in_rule(model, n,h,i,w,gp):
-        return sum(model.transmissionOperational[n2,n,h,i,w,gp] for n2 in model.NodesLinked[n]) - model.offshoreConvInstalledCap[n,i] <= 0
-    model.offshore_hub_capacity_in = Constraint(model.OffshoreEnergyHubs, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, rule=offshore_hub_capacity_in_rule)
-
-    def offshore_hub_capacity_out_rule(model, n,h,i,w,gp):
-        return sum(model.transmissionOperational[n,n2,h,i,w,gp] for n2 in model.NodesLinked[n]) - model.offshoreConvInstalledCap[n,i] <= 0
-    model.offshore_hub_capacity_out = Constraint(model.OffshoreEnergyHubs, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, rule=offshore_hub_capacity_out_rule)
-
-
     if flags.cvar:
         def prep_auxiliary_vars_cvar(model, i, w, gp):
             return model.aux_vars_cvar[i, w, gp] >= model.operational_cost_scenario[i, w, gp] - model.value_at_risk[i]

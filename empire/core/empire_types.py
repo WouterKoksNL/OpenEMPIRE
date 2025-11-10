@@ -11,3 +11,4 @@ class Flags:
     gas_stochasticity: bool
     out_of_sample: bool
     transport: bool
+    offshore_converters: bool

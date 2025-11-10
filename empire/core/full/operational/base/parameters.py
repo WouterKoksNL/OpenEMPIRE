@@ -22,7 +22,6 @@ def define_base_operational_parameters(model, use_cvar=False, cvar_percentile=No
     model.genFuelCost = Param(model.Generator, model.Period, mutable=True)
     model.genMargCost = Param(model.Generator, model.Period, default=600, mutable=True)
     model.genCO2TypeFactor = Param(model.Generator, default=0.0, mutable=True)
-    model.genCO2Captured = Param(model.Generator, default=0.0, mutable=True)
     model.genEfficiency = Param(model.Generator, model.Period, default=1.0, mutable=True)
     model.genRampUpCap = Param(model.RampingGenerators, default=0.0, mutable=True)
     model.genCapAvailTypeRaw = Param(model.Generator, default=1.0, mutable=True)
@@ -71,7 +70,6 @@ def load_base_operational_parameter_data(data, dataset_dir, model, filtering_dic
             "genFuelCost",
             "genEfficiency",
             "genCO2TypeFactor",
-            "genCO2Captured",
             "genRampUpCap",
             "genCapAvailTypeRaw",
         ],

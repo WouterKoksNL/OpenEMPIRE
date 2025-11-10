@@ -2,10 +2,13 @@ from .base.out_of_sample import define_base_investments_as_param, load_base_oos_
 from .heat.out_of_sample import define_heat_investments_as_param, load_heat_oos_investments
 from .industry.out_of_sample import define_industry_investments_as_param, load_industry_oos_investments
 from .hydrogen.out_of_sample import define_hydrogen_investments_as_param, load_hydrogen_oos_investments
-
+from .offshore_converters.out_of_sample import define_offshore_converter_investments_as_param, load_offshore_converter_oos_investments
 
 def define_investments_as_param(model, flags):
+    
     define_base_investments_as_param(model)
+    if flags.offshore_converters:
+        define_offshore_converter_investments_as_param(model)
     if flags.heat:
         define_heat_investments_as_param(model)
     if flags.industry:
@@ -17,6 +20,8 @@ def define_investments_as_param(model, flags):
 def load_oos_investments(model, data, result_file_path, flags):
     load_base_oos_investments(model, data, result_file_path)
 
+    if flags.offshore_converters:
+        load_offshore_converter_oos_investments(model, data, result_file_path)
     if flags.heat:
         load_heat_oos_investments(model, data, result_file_path)
 

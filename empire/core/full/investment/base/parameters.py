@@ -4,7 +4,7 @@ from pyomo.environ import Param
 from empire.core.loading_utils import load_parameters
 
 
-def define_base_investment_parameters(model, offshore_wind=True):
+def define_base_investment_parameters(model):
     """Define parameters specific to investment decisions.
     
     Args:
@@ -52,18 +52,10 @@ def define_base_investment_parameters(model, offshore_wind=True):
     model.storENMaxInstalledCap = Param(model.StoragesOfNode, model.Period, default=0.0, mutable=True)
     model.storENMaxInstalledCapRaw = Param(model.StoragesOfNode, default=0.0, mutable=True)
     model.storageLifetime = Param(model.Storage, default=0.0, mutable=True)
-    
-    # Offshore converter investment parameters
-    if offshore_wind:
-        model.offshoreConvCapitalCost = Param(model.Period, default=999999, mutable=True)
-        model.offshoreConvInvCost = Param(model.Period, default=999999, mutable=True)
-        model.offshoreConvOMCost = Param(model.Period, default=999999, mutable=True)
-        model.offshoreConvLifetime = Param(default=40)
 
 
 
-
-def load_base_investment_parameter_data(data, dataset_dir, model, filtering_dict=None, offshore_wind=True):
+def load_base_investment_parameter_data(data, dataset_dir, model, filtering_dict=None):
     """Load investment parameter data from tab files.
     
     Args:
@@ -108,11 +100,6 @@ def load_base_investment_parameter_data(data, dataset_dir, model, filtering_dict
             "storageLifetime",
         ],
     }
-    if offshore_wind:
-        input_parameters["Transmission"].extend([
-            "offshoreConvCapitalCost",
-            "offshoreConvOMCost",
-        ])
 
     for component, param_list in input_parameters.items():
         load_parameters(

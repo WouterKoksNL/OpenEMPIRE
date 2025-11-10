@@ -1,4 +1,5 @@
 from pyomo.environ import BuildAction, value, Expression
+from dataclasses import dataclass
 
 
 def remaining_asset_time(remaining_model_years, lifetime):
@@ -43,13 +44,7 @@ def define_base_investment_expressions(model):
                         costperperiod=costperyear*(1-(1+model.discount_rate)**-(min(value((len(model.Period)-i+1)*model.leap_years_investment), value(model.transmissionLifetime[n1,n2]))))/(1-(1/(1+model.discount_rate)))
                         model.transmissionInvCost[n1,n2,i]=costperperiod
 
-        #Offshore converter
-        for i in model.Period:
-            costperyear = (model.WACC/(1-((1+model.WACC)**(1-model.offshoreConvLifetime))))*model.offshoreConvCapitalCost[i] + model.offshoreConvOMCost[i]
-            costperperiod = costperyear*(1-(1+model.discount_rate)**-(min(value((len(model.Period)-i+1)*model.leap_years_investment),model.offshoreConvLifetime)))/(1-(1/(1+model.discount_rate)))
-            model.offshoreConvInvCost[i] = costperperiod
 
-       
             # #transport
             # for i in model.Period:
             #     for v in model.VehicleTypes:
