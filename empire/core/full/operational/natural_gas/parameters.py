@@ -29,6 +29,9 @@ def define_natural_gas_parameters(model):
     # Reserves
     model.ng_reserves = Param(model.NaturalGasNode, default=0, mutable=True)
 
+        # Available resources
+    model.availableBioEnergy = Param(model.Period, default=0, mutable=True)
+
 
 
 def load_natural_gas_parameter_data(data, dataset_dir, model, gas_stochasticity_flag=False, filtering_dict=None):
