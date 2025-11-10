@@ -48,7 +48,6 @@ def load_base_shared_parameter_data(data, dataset_dir, model, filtering_dict=Non
     """Load shared parameter data. Optionally filter by period and scenario (for Benders).
     """
     params = {
-        "General": ["availableBioEnergy"],
         "Node": [
             "nodeLostLoadCost",
             "sloadAnnualDemand",
