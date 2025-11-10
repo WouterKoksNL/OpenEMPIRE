@@ -8,7 +8,6 @@ from .industry.sets import define_industry_sets, define_industry_derived_sets, l
 
 def define_shared_sets(
         model, 
-        Period,
         windfarmNodes,
         flags: Flags
     ):
