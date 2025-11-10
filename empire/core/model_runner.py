@@ -116,9 +116,8 @@ def run_empire_model(
     logger.info("ID: %s", paths.run_name)
     logger.info("++++++++")
 
-    
-    stochastic_input_setup(empire_config, paths)
-
+    if not OUT_OF_SAMPLE:
+        stochastic_input_setup(empire_config, paths)
 
     obj_value = None
     if not test_run:
