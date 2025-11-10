@@ -13,21 +13,6 @@ def define_base_operational_constraints(model, EMISSION_CAP, flags: Flags):
         return model.electricFlow[n, h, i, w, gp] == 0
     model.FlowBalance = Constraint(model.Node, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, rule=flow_balance_constraint_rule)
 
-    def max_bio_availability_rule(model, i, w, gp):
-        bio_use = 0
-        for n in model.NaturalGasNode:
-            for g in model.Generator:
-                if (n,g) in model.GeneratorsOfNode:
-                    if 'bio' in g.lower():
-                        if 'cofiring' in g.lower():
-                            bio_use += sum(model.seasScale[s] * 0.1 * model.genOperational[n,g,h,i,w,gp] / model.genEfficiency[g,i] * Constants.GJperMWh for (s,h) in model.HoursOfSeason)
-                        else:
-                            bio_use += sum(model.seasScale[s] * model.genOperational[n,g,h,i,w,gp] / model.genEfficiency[g,i] * Constants.GJperMWh for (s,h) in model.HoursOfSeason)
-        if flags.industry:
-            for n in model.SteelProducers:
-                bio_use += sum(model.seasScale[s] * model.steel_bioConsumption[p,i] * model.steelProduced[n,p,h,i,w,gp] for p in model.SteelPlants for (s,h) in model.HoursOfSeason)
-        return bio_use <= model.availableBioEnergy[i]
-    # model.max_bio_availability = Constraint(model.Period, model.Scenario, model.GasScenario, rule=max_bio_availability_rule)
 
     def genFuelUse_limit_rule(model, n, i, w, gp):
         biomethane_use = 0
