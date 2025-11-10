@@ -64,8 +64,11 @@ def run_empire(
         out_of_sample_flag: bool = False,
         sample_file_path: Path | None = None,
         ) -> tuple[float, ConcreteModel] | None:
+    
     dataset_dir = paths.dataset_path
     filtering_dict = {"Period": periods_active}
+    stochastic_input_dir = (dataset_dir / "Stochastic" if not out_of_sample_flag else sample_file_path)
+    
     windfarmNodes = None
     offshoreNodesList = []
     flags = Flags(
@@ -76,6 +79,7 @@ def run_empire(
         cvar=False,
         gas_stochasticity=False,
         out_of_sample=out_of_sample_flag,
+        transport=False,
     )
 
     prepare_temp_dir(empire_config.use_temporary_directory, temp_dir=empire_config.temporary_directory)
@@ -86,7 +90,6 @@ def run_empire(
     define_shared_sets(model, windfarmNodes, flags)
     define_operational_sets(model, operational_input_params, flags)
     
-    filtering_dict = {"Period": periods_active}
 
     data = DataPortal()
     load_shared_set_data(data, dataset_dir, model, flags, load_period=True, periods_active=periods_active)
@@ -96,8 +99,8 @@ def run_empire(
     define_shared_parameters(model, empire_config, flags)
 
     load_shared_parameter_data(data, dataset_dir, model, flags, filtering_dict=filtering_dict)
-    stochastic_input_dir = (dataset_dir / "Stochastic" if not out_of_sample_flag else sample_file_path)
-    load_operational_parameter_data(data, stochastic_input_dir, dataset_dir, model, flags, filtering_dict=filtering_dict)
+    
+    load_operational_parameter_data(data, dataset_dir, stochastic_input_dir, model, flags, filtering_dict=filtering_dict)
     load_investment_parameter_data(data, dataset_dir, model, flags, filtering_dict=filtering_dict)
   
     
