@@ -31,24 +31,34 @@ def define_natural_gas_parameters(model):
 
 
 
-def load_natural_gas_parameter_data(data, tab_file_path, model, gas_stochasticity_flag=False):
+def load_natural_gas_parameter_data(data, dataset_dir, model, gas_stochasticity_flag=False, filtering_dict=None):
     """Load natural gas parameter data from tab files.
     
     Args:
         data: Pyomo DataPortal object
-        tab_file_path: Path to directory containing tab files
+        dataset_dir: Path to dataset input directory
         model: Pyomo model with parameters already defined
         gas_stochasticity_flag: Whether to load stochastic gas price data
     """
-    data.load(filename=tab_file_path + '/' + 'NaturalGas_StorageCapacity.tab', param=model.ng_storageCapacity, format='table')
-    data.load(filename=tab_file_path + '/' + 'NaturalGas_PipelineCapacity.tab', param=model.ng_pipelineCapacity, format='table')
-    data.load(filename=tab_file_path + '/' + 'NaturalGas_PipelineElectricityUse.tab', param=model.ng_pipelinePowerDemandPerTon, format='table')
-    
-    # Terminal cost - depends on stochasticity flag
-    if not gas_stochasticity_flag:
-        data.load(filename=tab_file_path + '/' + 'NaturalGas_TerminalCost.tab', param=model.ng_terminalCost, format='table')
+    param_list = [
+        'ng_storageCapacity',
+        'ng_pipelineCapacity',
+        'ng_pipelinePowerDemandPerTon',
+        'ng_terminalCapacity',
+        'ng_reserves',
+        'availableBioEnergy',
+    ]
+    if gas_stochasticity_flag:
+        param_list.append('ng_terminalCostStochastic')
     else:
-        data.load(filename=tab_file_path + '/' + 'NaturalGas_TerminalCost_stochastic.tab', param=model.ng_terminalCost, format='table')
+        param_list.append('ng_terminalCost')
     
-    data.load(filename=tab_file_path + '/' + 'NaturalGas_TerminalCapacity.tab', param=model.ng_terminalCapacity, format='table')
-    data.load(filename=tab_file_path + '/' + 'NaturalGas_Reserves.tab', param=model.ng_reserves, format='table')
+
+    load_parameters(
+        data, 
+        dataset_dir / 'NaturalGas',
+        param_name_list=param_list,
+        model=model,
+        filtering_dict=filtering_dict
+        )
+
