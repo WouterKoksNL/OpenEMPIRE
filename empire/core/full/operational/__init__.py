@@ -1,5 +1,7 @@
 from .sets import (
-    define_operational_sets
+    define_operational_sets,
+    load_operational_set_data,
+    define_operational_derived_sets,
 )
 from .parameters import (
     define_operational_parameters,
@@ -27,4 +29,6 @@ __all__ = [
     "derive_stochastic_parameters",
     "OperationalInputParams",
     "derive_instance_stochastic_parameters",
+    "define_operational_derived_sets",
+    "load_operational_set_data",
 ]

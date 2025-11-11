@@ -93,7 +93,9 @@ def run_empire(
 
     data = DataPortal()
     load_shared_set_data(data, dataset_dir, model, flags, load_period=True, periods_active=periods_active)
+    load_operational_set_data(data, dataset_dir, model, flags)
     define_shared_derived_sets(model, offshoreNodesList, flags)  # must be before operational parameter loading 
+    define_operational_derived_sets(model, flags)
     define_investment_parameters(model, flags)
     define_operational_parameters(model, flags, empire_config.cvar_percentile, empire_config.cvar_weight)
     define_shared_parameters(model, empire_config, flags)

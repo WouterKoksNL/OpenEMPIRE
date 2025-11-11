@@ -105,7 +105,7 @@ def load_base_shared_set_data(data, dataset_dir, model, load_period=True, period
 #     data.load(filename=tab_file_path + "/" + 'Sets_StorageOfNodes.tab', format="set", set=model.StoragesOfNode)
 
 
-def define_base_shared_derived_sets(model, offshoreNodesList):
+def define_base_shared_derived_sets(model):
     """Define derived sets that depend on other sets being loaded first."""
     # Bidirectional transmission arcs
     def BidirectionalArc_init(model):
@@ -125,21 +125,4 @@ def define_base_shared_derived_sets(model, offshoreNodesList):
         return retval
     model.NodesLinked = Set(model.Node, initialize=NodesLinked_init)
     
-    # Offshore energy hubs
-    def OffshoreEnergyHubs_init(model):
-        retval = []
-        for node in model.Node:
-            if node in offshoreNodesList:
-                retval.append(node)
-        return retval
-    model.OffshoreEnergyHubs = Set(initialize=OffshoreEnergyHubs_init, ordered=True)
     
-    # Natural gas generators
-    def NaturalGasGenerators_init(model):
-        retval = []
-        for gen in model.Generator:
-            if 'gas' in gen.lower():
-                retval.append(gen)
-        return retval
-    model.NaturalGasGenerators = Set(ordered=True, initialize=NaturalGasGenerators_init, within=model.Generator)
-

@@ -37,13 +37,6 @@ def define_base_investment_constraints(model, windfarmNodes=None):
         return sum(model.transmissionInvCap[n1,n2,j] for j in model.Period if j>=startPeriod and j<=i)- model.transmissionInstalledCap[n1,n2,i] + model.transmissionInitCap[n1,n2,i] == 0   #
     model.installedCapDefinitionTrans = Constraint(model.BidirectionalArc, model.Period, rule=lifetime_rule_trans)
 
-    # GD: Linking offshoreConvInvCap and offshoreConvInstalledCap variables
-    def lifetime_rule_conver(model,n, i):
-        startPeriod=1
-        if value(1+i-model.offshoreConvLifetime*(1/model.leap_years_investment))>startPeriod:
-            startPeriod=value(1+i-model.offshoreConvLifetime*(1/model.leap_years_investment))
-        return sum(model.offshoreConvInvCap[n,j] for j in model.Period if j>=startPeriod and j<=i) - model.offshoreConvInstalledCap[n,i] == 0
-    model.installedCapDefinitionConv = Constraint(model.OffshoreEnergyHubs, model.Period, rule=lifetime_rule_conver)
 
     #################################################################
 
