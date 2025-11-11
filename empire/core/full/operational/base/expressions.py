@@ -57,16 +57,20 @@ def define_base_operational_expressions(
      
     def prepOperationalCostGen_rule(model):
         #Build generator short term marginal costs
+        
+        ng_gens = (model.NaturalGasGenerators if hasattr(model, 'NaturalGasGenerators') else [])
+        h2_gens = (model.HydrogenGenerators if hasattr(model, 'HydrogenGenerators') else [])
+        non_ng_h2_gens = [g for g in model.Generator if g not in ng_gens and g not in h2_gens]
+
         for g in model.Generator:
             for i in model.Period:
                 if not EMISSION_CAP:
                     costperenergyunit=(Constants.GJperMWh/model.genEfficiency[g,i])*(model.genCO2TypeFactor[g]*model.CO2price[i])+ \
                                       model.genVariableOMCost[g]
-                    if g not in model.NaturalGasGenerators and g not in model.HydrogenGenerators:
-                        costperenergyunit += (Constants.GJperMWh/model.genEfficiency[g,i])*(model.genFuelCost[g,i])
                 else:
                     costperenergyunit = model.genVariableOMCost[g]
-                    if g not in model.NaturalGasGenerators and g not in model.HydrogenGenerators:
+                    
+                if g in non_ng_h2_gens:
                         costperenergyunit += (Constants.GJperMWh/model.genEfficiency[g,i])*(model.genFuelCost[g,i])
                 model.genMargCost[g,i] = costperenergyunit
 
