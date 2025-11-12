@@ -37,6 +37,5 @@ def load_offshore_converter_investment_parameter_data(data, dataset_dir, model, 
             full_path=dataset_dir / "Transmission",
             param_name=param,
             param=getattr(model, param),
-            model=model,
             filtering_dict=filtering_dict
         )
