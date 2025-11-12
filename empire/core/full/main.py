@@ -20,7 +20,7 @@ from .solver import set_solver, solve
 from .helpers import pickle_instance, log_problem_statistics, prepare_temp_dir, prepare_results_dir
 from empire.core.config import EmpireConfiguration
 from empire.core.paths import PathsConfig
-from empire.core.empire_types import Flags
+
 
 
 from empire.core.full.shared import (
@@ -71,64 +71,55 @@ def run_empire(
     
     windfarmNodes = None
     offshoreNodesList = []
-    flags = Flags(
-        natural_gas=False,
-        heat=False,
-        hydrogen=False,
-        industry=False,
-        cvar=False,
-        gas_stochasticity=False,
-        out_of_sample=out_of_sample_flag,
-        transport=False,
-    )
 
     prepare_temp_dir(empire_config.use_temporary_directory, temp_dir=empire_config.temporary_directory)
     prepare_results_dir(paths)
 
     model = AbstractModel()
     
-    define_shared_sets(model, windfarmNodes, flags)
-    define_operational_sets(model, operational_input_params, flags)
+    define_shared_sets(model, windfarmNodes, empire_config)
+    define_operational_sets(model, operational_input_params, empire_config)
     
 
     data = DataPortal()
-    load_shared_set_data(data, dataset_dir, model, flags, load_period=True, periods_active=periods_active)
-    load_operational_set_data(data, dataset_dir, model, flags)
-    define_shared_derived_sets(model, offshoreNodesList, flags)  # must be before operational parameter loading 
-    define_operational_derived_sets(model, flags)
-    define_investment_parameters(model, flags)
-    define_operational_parameters(model, flags, empire_config.cvar_percentile, empire_config.cvar_weight)
-    define_shared_parameters(model, empire_config, flags)
+    load_shared_set_data(data, paths.dataset_path, model, empire_config, load_period=True, periods_active=periods_active)
+    load_operational_set_data(data, paths.dataset_path, model, empire_config)
+    define_shared_derived_sets(model, offshoreNodesList, empire_config)  # must be before operational parameter loading 
+    define_operational_derived_sets(model, empire_config)
+    define_investment_parameters(model, empire_config)
+    define_operational_parameters(model, empire_config)
+    define_shared_parameters(model, empire_config)
 
-    load_shared_parameter_data(data, dataset_dir, model, flags, filtering_dict=filtering_dict)
+    filtering_dict = {"Period": periods_active}
+    load_shared_parameter_data(data, paths.dataset_path, model, empire_config, filtering_dict=filtering_dict)
     
-    load_operational_parameter_data(data, dataset_dir, stochastic_input_dir, model, flags, filtering_dict=filtering_dict)
-    load_investment_parameter_data(data, dataset_dir, model, flags, filtering_dict=filtering_dict)
+    load_operational_parameter_data(data, paths.dataset_path, stochastic_input_dir, model, empire_config, filtering_dict=filtering_dict)
+    load_investment_parameter_data(data, paths.dataset_path, model, empire_config, filtering_dict=filtering_dict)
   
     
     # Variable definitions
     if out_of_sample_flag:
         define_investments_as_param(model)
-        load_oos_investments(model, data, paths.results_path, flags)
+        load_oos_investments(model, data, paths.results_path, empire_config)
         results_path = set_out_of_sample_path(paths.results_path, sample_file_path)
         logger.info("Out-of-sample results will be saved to: %s", results_path)
 
     else:
-        define_investment_variables(model, flags)
+        define_investment_variables(model, empire_config)
 
-    define_operational_variables(model, flags)
+    define_operational_variables(model, empire_config)
     
-    define_operational_expressions(model, empire_config, paths.results_path, flags)
-    define_investment_expressions(model, empire_config, flags)
-    define_shared_expressions(model, flags)
+    define_operational_expressions(model, empire_config, paths.results_path)
+    define_investment_expressions(model, empire_config)
+    define_shared_expressions(model, empire_config)
 
     define_objective(model, empire_config)
 
-    define_operational_constraints(model, empire_config, flags)
+    define_operational_constraints(model, empire_config)
 
-    if not flags.out_of_sample:
+    if not out_of_sample_flag:
         # All constraints exclusively for investment decisions inactive when out_of_sample
-        define_investment_constraints(model, empire_config, windfarmNodes, flags)
+        define_investment_constraints(model, empire_config, windfarmNodes)
 
 
     #################################################################

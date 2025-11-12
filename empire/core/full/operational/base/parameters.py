@@ -3,8 +3,9 @@ import pandas as pd
 
 from pyomo.environ import Param
 from empire.core.loading_utils import load_parameters, load_parameter
+from empire.core.config import EmpireConfiguration
 
-def define_base_operational_parameters(model, use_cvar=False, cvar_percentile=None, cvar_weight=None):
+def define_base_operational_parameters(model, empire_config: EmpireConfiguration):
     """Define parameters specific to operational constraints.
     
     These are general operational parameters. Module-specific parameters (hydrogen, 
@@ -48,9 +49,9 @@ def define_base_operational_parameters(model, use_cvar=False, cvar_percentile=No
     model.maxHydroNode = Param(model.Node, default=0.0, mutable=True)
     
     # CVaR module parameters (conditional)
-    if use_cvar:
-        model.cvar_percentile = Param(initialize=cvar_percentile)  # alpha
-        model.cvar_weight = Param(initialize=cvar_weight)  # lambda
+    if empire_config.cvar_flag:
+        model.cvar_percentile = Param(initialize=empire_config.cvar_percentile)  # alpha
+        model.cvar_weight = Param(initialize=empire_config.cvar_weight)  # lambda
 
 
 

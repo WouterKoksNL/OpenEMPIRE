@@ -1,8 +1,9 @@
 from inspect import Parameter, signature
 from pathlib import Path
 from typing import Dict
-from dataclasses import dataclass
 import yaml
+
+
 
 
 def read_config_file(path: Path) -> Dict:
@@ -51,15 +52,18 @@ class EmpireConfiguration:
         benders_flag: bool = False,
         cvar_flag: bool = False,
         hydrogen_flag: bool = False,
+        natural_gas_flag: bool = False,
         heat_flag: bool = False,
         industry_flag: bool = False,
         industry_flexibility_flag: bool = False,
-        emission_cap_flag: bool = True,
+        emission_cap_flag: bool = False,
+        north_sea_flag: bool = False,
+        offshore_converters_flag: bool = False,
+
         compute_operational_duals_flag: bool = False,
         print_iamc_flag: bool = False,
         write_in_lp_format: bool = False,
         serialize_instance: bool = False,
-        north_sea_flag: bool = True,
         pickle_instance_flag: bool = False,
 
         # Voronoi SGR
@@ -115,7 +119,7 @@ class EmpireConfiguration:
         :param time_format: Time format
 
         """
-
+        
         # ------------------------------
         # General settings
         # ------------------------------
@@ -159,14 +163,18 @@ class EmpireConfiguration:
         # ------------------------------
         # Flags
         # ------------------------------
+
+
         self.benders_flag = benders_flag
         self.cvar_flag = cvar_flag
+        self.natural_gas_flag = natural_gas_flag
         self.hydrogen_flag = hydrogen_flag
         self.heat_flag = heat_flag
         self.industry_flag = industry_flag
         self.industry_flexibility_flag = industry_flexibility_flag
         self.emission_cap_flag = emission_cap_flag
         self.compute_operational_duals_flag = compute_operational_duals_flag
+        self.offshore_converters_flag = offshore_converters_flag
         self.print_iamc_flag = print_iamc_flag
         self.write_in_lp_format = write_in_lp_format
         self.serialize_instance = serialize_instance

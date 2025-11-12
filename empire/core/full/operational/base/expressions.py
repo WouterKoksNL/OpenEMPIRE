@@ -3,7 +3,6 @@ import pandas as pd
 
 from empire.core.constants import Constants
 from empire.core.config import EmpireConfiguration
-from empire.core.empire_types import Flags
 
 from ..hydrogen.constraints import add_hydrogen_electric_demand, add_hydrogen_transport_electric_demand
 from ..industry.constraints import add_industry_electric_demand
@@ -13,8 +12,6 @@ from ..natural_gas.constraints import add_natural_gas_electric_demand
 def define_base_operational_build_actions(
         model,
         empire_config: EmpireConfiguration,
-        result_file_path, 
-        flags: Flags
         ):
     """Define BuildActions that must be executed before expressions that depend on them."""
      
@@ -50,8 +47,7 @@ def define_base_operational_build_actions(
 
 def define_base_operational_expressions(
         model,
-        EMISSION_CAP: bool,
-        flags: Flags
+        empire_config: EmpireConfiguration,
         ):
     """Define operational expressions that may depend on BuildActions from modules."""
      
@@ -64,7 +60,7 @@ def define_base_operational_expressions(
 
         for g in model.Generator:
             for i in model.Period:
-                if not EMISSION_CAP:
+                if not empire_config.emission_cap_flag:
                     costperenergyunit=(Constants.GJperMWh/model.genEfficiency[g,i])*(model.genCO2TypeFactor[g]*model.CO2price[i])+ \
                                       model.genVariableOMCost[g]
                 else:
@@ -88,19 +84,19 @@ def define_base_operational_expressions(
                 + sum((model.lineEfficiency[link,n]*model.transmissionOperational[link,n,h,i,w,gp] - model.transmissionOperational[n,link,h,i,w,gp]) for link in model.NodesLinked[n]) \
                 - model.sload[n,h,i,w] + model.loadShed[n,h,i,w,gp]
 
-        if flags.heat:
+        if empire_config.heat_flag:
             flow = add_heat_electric_demand(model, flow, n, h, i, w, gp)
         else:
             flow += sum(model.genOperational[n,g,h,i,w,gp] for g in model.Generator if (n,g) in model.GeneratorsOfNode) 
 
-        if flags.natural_gas:
+        if empire_config.natural_gas_flag:
             flow = add_natural_gas_electric_demand(model, flow, n, h, i, w, gp)
-        
-        if flags.hydrogen:
+
+        if empire_config.hydrogen_flag:
             flow = add_hydrogen_electric_demand(model, flow, n, h, i, w, gp)
             flow = add_hydrogen_transport_electric_demand(model, flow, n, h, i, w, gp)
 
-        if flags.industry:
+        if empire_config.industry_flag:
             flow = add_industry_electric_demand(model, flow, n, h, i, w, gp)
         
         return flow
@@ -111,18 +107,18 @@ def define_base_operational_expressions(
     def operational_cost_scenario_rule(model, i, w, gp):
         returnSum = sum(model.operationalDiscountrate*model.seasScale[s]*model.genMargCost[g,i]*model.genOperational[n,g,h,i,w,gp] for (n,g) in model.GeneratorsOfNode for (s,h) in model.HoursOfSeason) + \
                      model.shedcomponent[i,w,gp] 
-        if flags.natural_gas:
+        if empire_config.natural_gas_flag:
             returnSum += model.ng_import_cost[i,w,gp]
-        if flags.industry:
+        if empire_config.industry_flag:
             returnSum += model.steel_opex[i,w,gp] + model.cement_opex[i,w,gp] + model.ammonia_opex[i,w,gp] + model.oil_opex[i,w,gp] + model.reformerOperationalCost[i,w,gp] 
-        if flags.hydrogen:
+        if empire_config.hydrogen_flag:
             returnSum += model.transport_load_shed_cost[i,w,gp] + model.H2TerminalImportCost[i,w,gp]
-        if flags.heat:
+        if empire_config.heat_flag:
             returnSum += model.shedcomponentTR[i,w,gp]
         return returnSum
     model.operational_cost_scenario = Expression(model.Period, model.Scenario, model.GasScenario, rule=operational_cost_scenario_rule)
 
-    if flags.cvar:
+    if empire_config.cvar_flag:
         def prep_cvar(model, i):
             return model.value_at_risk[i] + 1 / (1 - model.cvar_percentile) * sum(model.sceProbab[w] * model.GasSceProbab[gp] * model.aux_vars_cvar[i,w,gp] for w in model.Scenario for gp in model.GasScenario)
         model.cvar = Expression(model.Period, rule=prep_cvar)

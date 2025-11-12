@@ -8,7 +8,7 @@ from .hydrogen.expressions import define_hydrogen_operational_expressions
 from .industry.expressions import define_industry_operational_expressions
 
 
-def define_operational_expressions(model, empire_config: EmpireConfiguration, result_file_path, flags):
+def define_operational_expressions(model, empire_config: EmpireConfiguration, result_file_path):
     """Define operational expressions in the correct dependency order.
     
     Order is critical:
@@ -24,23 +24,23 @@ def define_operational_expressions(model, empire_config: EmpireConfiguration, re
     
     # Step 1: Base build actions that create foundational parameters
     # These MUST be first as shared expressions and heat expressions depend on them
-    define_base_operational_build_actions(model, empire_config, result_file_path, flags)
+    define_base_operational_build_actions(model, empire_config)
     
     # Step 2: Heat expressions that modify parameters used in base expressions
-    if flags.heat:
+    if empire_config.heat_flag:
         define_heat_operational_expressions(model, result_file_path)
     
 
     # Step 4: Other module expressions
-    if flags.natural_gas:
+    if empire_config.natural_gas_flag:
         define_natural_gas_expressions(model)
-    if flags.hydrogen:
+    if empire_config.hydrogen_flag:
         define_hydrogen_operational_expressions(model)
-    if flags.industry:
+    if empire_config.industry_flag:
         define_industry_operational_expressions(model, empire_config.emission_cap_flag, empire_config.steel_CCS_capture_rate)
 
     # Step 3: Base operational expressions that use modified parameters
-    define_base_operational_expressions(model, empire_config.emission_cap_flag, flags)
+    define_base_operational_expressions(model, empire_config)
 
 
 def derive_instance_stochastic_parameters(instance: ConcreteModel, node_unscaled_yearly_demand_ser=None) -> None:

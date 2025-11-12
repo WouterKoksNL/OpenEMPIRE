@@ -1,11 +1,11 @@
 from pyomo.environ import Constraint, value
 
 from empire.core.constants import Constants
-from empire.core.empire_types import Flags
+from empire.core.config import EmpireConfiguration
 
 
 
-def define_base_operational_constraints(model, EMISSION_CAP, flags: Flags):
+def define_base_operational_constraints(model, empire_config: EmpireConfiguration):
     # Define the electric flow expression with all module contributions
 
     # Simple constraint: electric flow must balance to zero
@@ -111,20 +111,20 @@ def define_base_operational_constraints(model, EMISSION_CAP, flags: Flags):
 
     #################################################################
 
-    if EMISSION_CAP:
+    if empire_config.emission_cap_flag:
         def emission_cap_rule(model, i, w, gp):
             # return (model.generatorEmissions[i,w,gp] + model.industryEmissions[i,w,gp]  + model.reformerEmissions[i,w,gp]) / co2_scale_factor <= (model.CO2cap[i] * 1e6 + model.CO2CapExceeded[i,w,gp]) / co2_scale_factor
             #return (model.generatorEmissions[i,w,gp] + model.industryEmissions[i,w,gp]  + model.reformerEmissions[i,w,gp]) / co2_scale_factor <= model.CO2cap[i] * 1e6 / co2_scale_factor
             emissions = model.generatorEmissions[i, w, gp]
-            if flags.hydrogen:
-                emissions += model.reformerEmissions[i, w, gp]  
-            if flags.industry:
-                emissions += model.industryEmissions[i, w, gp] 
+            if empire_config.hydrogen_flag:
+                emissions += model.reformerEmissions[i, w, gp]
+            if empire_config.industry_flag:
+                emissions += model.industryEmissions[i, w, gp]
             return emissions / Constants.co2_scale_factor <= model.CO2cap[i] * 1e6 / Constants.co2_scale_factor
         model.emission_cap = Constraint(model.Period, model.Scenario, model.GasScenario, rule=emission_cap_rule)
 
 
-    if flags.cvar:
+    if empire_config.cvar_flag:
         def prep_auxiliary_vars_cvar(model, i, w, gp):
             return model.aux_vars_cvar[i, w, gp] >= model.operational_cost_scenario[i, w, gp] - model.value_at_risk[i]
 

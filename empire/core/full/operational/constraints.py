@@ -7,22 +7,22 @@ from .hydrogen.constraints import define_operational_hydrogen_constraints
 from .industry.constraints import define_industry_operational_constraints
 from .offshore_converters.constraints import define_operational_offshore_converter_constraints
 
-def define_operational_constraints(model, empire_config: EmpireConfiguration, flags):
-    define_base_operational_constraints(model, empire_config.emission_cap_flag, flags)
-    
-    if flags.offshore_converters:
+def define_operational_constraints(model, empire_config: EmpireConfiguration):
+    define_base_operational_constraints(model, empire_config)
+
+    if empire_config.offshore_converters_flag:
         define_operational_offshore_converter_constraints(model)
 
-    if flags.natural_gas:
-        define_operational_natural_gas_constraints(model, empire_config.leap_years_investment, flags.hydrogen, flags.industry)
+    if empire_config.natural_gas_flag:
+        define_operational_natural_gas_constraints(model, empire_config.leap_years_investment, empire_config.hydrogen_flag, empire_config.industry_flag)
 
-    if flags.heat:
+    if empire_config.heat_flag:
         define_operational_heat_constraints(model)
 
-    if flags.hydrogen:
-        define_operational_hydrogen_constraints(model, flags.industry, empire_config.leap_years_investment)
+    if empire_config.hydrogen_flag:
+        define_operational_hydrogen_constraints(model, empire_config.industry_flag, empire_config.leap_years_investment)
 
-    if flags.industry:
+    if empire_config.industry_flag:
         define_industry_operational_constraints(model, empire_config.industry_flexibility_flag)
 
     

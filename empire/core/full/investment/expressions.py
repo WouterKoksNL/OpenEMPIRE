@@ -7,14 +7,14 @@ from .hydrogen.expressions import define_hydrogen_investment_expressions
 from .industry.expressions import define_industry_investment_expressions
 from .offshore_converters.expressions import define_offshore_converter_investment_expressions
 
-def define_investment_expressions(model, empire_config: EmpireConfiguration, flags):
+def define_investment_expressions(model, empire_config: EmpireConfiguration):
     define_base_investment_expressions(model)
-    
-    if flags.offshore_converters:
+
+    if empire_config.offshore_converters_flag:
         define_offshore_converter_investment_expressions(model)
-    if flags.heat:
+    if empire_config.heat_flag:
         define_heat_investment_expressions(model)
-    if flags.hydrogen:
+    if empire_config.hydrogen_flag:
         define_hydrogen_investment_expressions(model, empire_config.gas_h2_repurpose_cost_factor)
-    if flags.industry:
+    if empire_config.industry_flag:
         define_industry_investment_expressions(model, empire_config.steel_CCS_cost_increase)
