@@ -1,9 +1,23 @@
 # This is an OpenEMPIRE configuration file used for test runs.
 # To be used with the execution script run.py
 
+
+emission_cap: False                                # Indicates if there's a cap on CO2 emissions
+cvar: False
+natural_gas: False
+gas_stochasticity: False
+hydrogen: False
+transport: False
+heat: False
+industry: False
+north_sea: True
+offshore_converters: False
+industry_flexibility_flag: False
+
+
 use_temporary_directory: True                          # Specifies whether to use a temporary directory for operations
 temporary_directory: './'                              # Path to the temporary directory used for certain operations
-forecast_horizon_year: 2040                            # Target or end year for the run
+forecast_horizon_year: 2035                            # Target or end year for the run
 number_of_scenarios: 2                                 # Number of scenarios in every investment period
 length_regular_season: 24                           # Number of hours in a regular season
 regular_seasons: ['winter', 'spring']
@@ -20,7 +34,7 @@ copulas_to_use: ["electricload"]                       # Emprical copula constru
 n_cluster : 10                                         #
 moment_matching : False                                #
 n_tree_compare : 20                                    # Number of trees to compare for moment matching and copula-sampling
-emission_cap_flag: False                                # Indicates if there's a cap on CO2 emissions
+
 compute_operational_duals_flag: False                        # Resolve empire with fixed investment variables and write new duals
 print_iamc_flag: True                             # Output should be printed in a IAMC-compatible format
 write_in_lp_format: False                              # Problem should be written in Linear Programming format
@@ -35,7 +49,7 @@ include_hydro_node_limit_constraint_flag: False
 parallel_benders_flag: False
 n_cores: 2
 
-cvar_flag: False
+
 cvar_percentile: 0.95
 cvar_weight: 0.0
 
@@ -46,3 +60,4 @@ steel_CCS_cost_increase:
 gas_h2_repurpose_cost_factor: 0.25
 repurposeEnergyFlowFactor: 0.8
 
+use_default_timeseries_source: False
