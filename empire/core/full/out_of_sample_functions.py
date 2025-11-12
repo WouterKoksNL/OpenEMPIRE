@@ -1,42 +1,6 @@
 import os 
 from pathlib import Path
-from pyomo.environ import Param, NonNegativeReals
 from empire.utils import get_name_of_last_folder_in_path
-from ..loading_utils import load_params
-
-
-def set_investments_as_parameters(model, set_only_capacities: bool = False):
-    # Redefine investment vars as input parameters
-    model.genInstalledCap = Param(model.GeneratorsOfNode, model.Period, domain=NonNegativeReals, mutable=True)
-    model.transmissionInstalledCap = Param(model.BidirectionalArc, model.Period, domain=NonNegativeReals, mutable=True)
-    model.storPWInstalledCap = Param(model.StoragesOfNode, model.Period, domain=NonNegativeReals, mutable=True)
-    model.storENInstalledCap = Param(model.StoragesOfNode, model.Period, domain=NonNegativeReals, mutable=True)
-    if set_only_capacities: 
-        return 
-    model.genInvCap = Param(model.GeneratorsOfNode, model.Period, domain=NonNegativeReals)
-    model.transmissionInvCap = Param(model.BidirectionalArc, model.Period, domain=NonNegativeReals)
-    model.storPWInvCap = Param(model.StoragesOfNode, model.Period, domain=NonNegativeReals)
-    model.storENInvCap = Param(model.StoragesOfNode, model.Period, domain=NonNegativeReals)
-    return 
-
-
-def load_optimized_investments(model, data, result_file_path, set_only_capacities: bool = False):
-    """Optimized investment decisions read from result file from in-sample runs"""
-    investment_params = [
-        "genInstalledCap",
-        "transmissionInstalledCap",
-        "storPWInstalledCap",
-        "storENInstalledCap",
-    ]
-    if not set_only_capacities:
-        investment_params += [
-            "genInvCap",
-            "transmissionInvCap",
-            "storPWInvCap",
-            "storENInvCap",
-        ]
-    load_params(data, model, result_file_path, investment_params, component="")  # component is "" since there is no subfolder in the output folder.
-    return 
 
 
 def set_out_of_sample_path(result_file_path, sample_file_path) -> Path:
@@ -46,3 +10,33 @@ def set_out_of_sample_path(result_file_path, sample_file_path) -> Path:
     if not os.path.exists(result_file_path):
         os.makedirs(result_file_path)
     return result_file_path
+
+
+def run_operational_model(
+    instance, 
+    opt,
+    result_file_path,
+    instance_name,
+    logger
+    ):
+
+    logger.info("Computing operational dual values by fixing investment variables and resolving.")
+
+    logger.info("Fixing investment variables")
+    for (n,g) in instance.GeneratorsOfNode:
+        for i in instance.Period:
+            instance.genInvCap[n,g,i].fix()
+
+    for (n1,n2) in instance.BidirectionalArc:
+        for i in instance.Period:        
+            instance.transmissionInvCap[n1,n2,i].fix()
+
+    for (n,b) in instance.StoragesOfNode:
+        for i in instance.Period:
+            instance.storPWInvCap[n,b,i].fix()
+            instance.storENInvCap[n,b,i].fix()
+
+    logger.info("Resolving")
+
+    opt.solve(instance, tee=True, logfile=result_file_path / f"logfile_{instance_name}_resolved.log")
+    return 

@@ -100,7 +100,7 @@ def run_empire(
     
     # Variable definitions
     if out_of_sample_flag:
-        define_investments_as_param(model)
+        define_investments_as_param(model, empire_config)
         load_oos_investments(model, data, paths.results_path, empire_config)
         results_path = set_out_of_sample_path(paths.results_path, sample_file_path)
         logger.info("Out-of-sample results will be saved to: %s", results_path)
