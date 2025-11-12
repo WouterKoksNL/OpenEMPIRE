@@ -26,3 +26,15 @@ def load_natural_gas_set_data(data, dataset_dir, model):
 
     load_sets(data, model, dataset_dir, input_sets)
     return 
+
+
+def define_natural_gas_derived_sets(model):
+    # Natural gas generators
+    def NaturalGasGenerators_init(model):
+        retval = []
+        for gen in model.Generator:
+            if 'gas' in gen.lower():
+                retval.append(gen)
+        return retval
+    model.NaturalGasGenerators = Set(ordered=True, initialize=NaturalGasGenerators_init, within=model.Generator)
+

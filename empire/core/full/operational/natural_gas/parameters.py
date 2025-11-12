@@ -1,6 +1,6 @@
 """Natural gas-specific parameters for the EMPIRE model."""
 from pyomo.environ import Param
-
+from empire.core.loading_utils import load_parameters
 
 def define_natural_gas_parameters(model):
     """Define parameters specific to the natural gas module.
