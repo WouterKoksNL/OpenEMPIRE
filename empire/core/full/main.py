@@ -15,7 +15,8 @@ from pyomo.environ import (
 from .objective import define_objective
 from empire.core.full.operational.operational_input_params import OperationalInputParams
 from .out_of_sample_functions import set_out_of_sample_path
-from .results import write_results, run_operational_model, write_operational_results, write_pre_solve
+from .results import run_operational_model, write_operational_results, write_pre_solve
+from empire.results.main import write_results
 from .solver import set_solver, solve
 from .helpers import pickle_instance, log_problem_statistics, prepare_temp_dir, prepare_results_dir
 from empire.core.config import EmpireConfiguration
@@ -170,7 +171,11 @@ def post_process(instance, paths, empire_config, opt, logger, out_of_sample_flag
 
     #import pdb; pdb.set_trace()
 
-    write_results(instance, paths.results_path, paths.run_name, out_of_sample_flag, empire_config.emission_cap_flag, empire_config.print_iamc_flag, logger)
+    write_results(        
+        instance, 
+        paths.results_path, 
+        paths.run_name,
+        empire_config,)
 
     if empire_config.compute_operational_duals_flag and not out_of_sample_flag:
         run_operational_model(instance, opt, paths.results_path, paths.run_name, logger)
