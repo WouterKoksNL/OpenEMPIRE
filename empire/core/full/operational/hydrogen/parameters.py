@@ -18,6 +18,7 @@ def define_hydrogen_operational_parameters(model):
     model.CO2PipelinePowerDemandPerTon = Param(model.CO2BidirectionalPipelines, default=99999, mutable=True)
     model.hydrogenPipelineCompressorElectricityUsage = Param(default=99999, mutable=True)
     model.hydrogenPipelinePowerDemandPerTon = Param(model.HydrogenBidirectionPipelines, default=99999, mutable=True)
+    model.genCO2Captured = Param(model.Generator, default=0.0, mutable=True)
 
     # Transport hydrogen demand parameters
     model.transport_electricity_demand = Param(model.OnshoreNode, model.Period)
@@ -48,6 +49,7 @@ def load_hydrogen_operational_parameter_data(data: DataPortal, dataset_dir, mode
         'ReformerEmissionFactor',
         'ReformerCO2CaptureFactor',
         'CO2PipelineElectricityUsage',
+        'genCO2Captured',
     ]
 
     load_parameters(

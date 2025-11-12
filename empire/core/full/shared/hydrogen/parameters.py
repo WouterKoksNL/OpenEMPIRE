@@ -14,5 +14,5 @@ def define_shared_hydrogen_parameters(model):
     Args:
         model: Pyomo abstract model
     """
-    model.PipelineLength = Param(model.HydrogenBidirectionPipelines, mutable=True, default=9999)  # data is loaded in 
+    model.PipelineLength = Param(model.HydrogenBidirectionPipelines, mutable=True, default=9999)  # constructed in .expressions
 

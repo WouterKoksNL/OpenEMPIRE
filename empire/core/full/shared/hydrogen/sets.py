@@ -1,6 +1,8 @@
 """Hydrogen-specific sets for the EMPIRE model."""
 from pyomo.environ import Set, BuildAction
+from pathlib import Path
 
+from empire.core.loading_utils import load_sets
 
 def define_hydrogen_sets(model):
     """Define sets specific to the hydrogen module.
@@ -24,27 +26,27 @@ def define_hydrogen_sets(model):
     model.CO2SequestrationNodes = Set(within=model.Node)
 
 
-def load_hydrogen_set_data(data, tab_file_path, model):
+def load_hydrogen_set_data(data, dataset_dir: Path, model):
     """Load hydrogen set data from tab files.
     
     Args:
         data: Pyomo DataPortal object
-        tab_file_path: Path to directory containing tab files
+        dataset_dir: Path to dataset input directory
         model: Pyomo model with sets already defined
     """
     # Hydrogen terminal sets
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_H2Terminals.tab', format="set", set=model.H2Terminals)
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_H2TerminalNodes.tab', format="set", set=model.H2TerminalNodes)
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_H2TerminalsOfNode.tab', format="set", set=model.H2TerminalsOfNode)
-    
-    # Hydrogen production sets
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_H2Storages.tab', format="set", set=model.H2Storages)
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_ProductionNodes.tab', format="set", set=model.HydrogenProdNode)
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_ReformerLocations.tab', format="set", set=model.ReformerLocations)
-    data.load(filename=tab_file_path + '/' + 'Hydrogen_ReformerPlants.tab', format="set", set=model.ReformerPlants)
-    
-    # CO2 sequestration sets
-    data.load(filename=tab_file_path + '/' + 'CO2_CO2SequestrationNodes.tab', format="set", set=model.CO2SequestrationNodes)
+
+    hydrogen_sets = [
+        'H2Terminals',
+        'H2TerminalNodes',
+        'H2TerminalsOfNode',
+        'H2Storages',
+        'HydrogenProdNode',
+        'ReformerLocations',
+        'ReformerPlants',
+        'CO2SequestrationNodes',
+    ]
+    load_sets(data, model, dataset_dir, hydrogen_sets, component='Hydrogen')
 
 
 def define_hydrogen_derived_sets(model):
