@@ -21,18 +21,18 @@ if __name__ == "__main__":
     df_t = df.query(f"Period == '{period}'")
 
     generator_columns = [
-        "Liginiteexisting_MW",
+        "Lignite_existing_MW",
         "Lignite_MW",
         "LigniteCCSadv_MW",
-        "Coalexisting_MW",
+        "Coal_existing_MW",
         "Coal_MW",
         "CoalCCSadv_MW",
-        "Gasexisting_MW",
+        "Gas_existing_MW",
         "GasOCGT_MW",
         "GasCCGT_MW",
         "GasCCSadv_MW",
-        "Oilexisting_MW",
-        "Bioexisting_MW",
+        "Oil_existing_MW",
+        "Bio_existing_MW",
         "Bio10cofiring_MW",
         "Nuclear_MW",
         "Wave_MW",

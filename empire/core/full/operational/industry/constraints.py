@@ -110,8 +110,8 @@ def define_industry_operational_constraints(model, FLEX_IND):
         return sum(model.seasScale[s] * (
                 sum(model.steel_CO2Emissions[p] * model.steelProduced[n,p,h,i,w,gp] for p in model.SteelPlants for n in model.SteelProducers)
                 ### emissions from cement production are multiplied by 2.5 to account for process emissions (approx. 60% of total emissions)
-                + sum((model.genCO2TypeFactor['Gasexisting'] * Constants.GJperMWh * Constants.ng_MWhPerTon * model.cement_fuelConsumption[p,i]/1000) * 2.5 * (1-model.cement_co2CaptureRate[p]) * model.cementProduced[n,p,h,i,w,gp] for p in model.CementPlants if "ng" in p.lower() for n in model.CementProducers)
-                + sum(model.genCO2TypeFactor['Gasexisting'] * Constants.GJperMWh * Constants.ng_MWhPerTon * model.ammonia_fuelConsumption[p]/1000 * model.ammoniaProduced[n,p,h,i,w,gp] for p in model.AmmoniaPlants if "ng" in p.lower() for n in model.AmmoniaProducers)
+                + sum((model.genCO2TypeFactor['Gas_existing'] * Constants.GJperMWh * Constants.ng_MWhPerTon * model.cement_fuelConsumption[p,i]/1000) * 2.5 * (1-model.cement_co2CaptureRate[p]) * model.cementProduced[n,p,h,i,w,gp] for p in model.CementPlants if "ng" in p.lower() for n in model.CementProducers)
+                + sum(model.genCO2TypeFactor['Gas_existing'] * Constants.GJperMWh * Constants.ng_MWhPerTon * model.ammonia_fuelConsumption[p]/1000 * model.ammoniaProduced[n,p,h,i,w,gp] for p in model.AmmoniaPlants if "ng" in p.lower() for n in model.AmmoniaProducers)
         ) for (s,h) in model.HoursOfSeason)
     model.industryEmissions = Expression(model.Period, model.Scenario, model.GasScenario, rule=industry_emissions_rule)
 
@@ -119,7 +119,7 @@ def define_industry_operational_constraints(model, FLEX_IND):
         ### emissions from cement production are multiplied by 2.5 to account for process emissions (approx. 60% of total emissions)
         captured = 0
         if n in model.CementProducers:
-            captured += sum((model.genCO2TypeFactor['Gasexisting'] * Constants.GJperMWh * Constants.ng_MWhPerTon * model.cement_fuelConsumption[
+            captured += sum((model.genCO2TypeFactor['Gas_existing'] * Constants.GJperMWh * Constants.ng_MWhPerTon * model.cement_fuelConsumption[
                 p,i]/1000) * 2.5 * model.cement_co2CaptureRate[p] * model.cementProduced[n,p,h,i,w,gp] for p in model.CementPlants if "ng" in p.lower())
 
         if n in model.SteelProducers:
