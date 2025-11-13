@@ -8,7 +8,7 @@ from .hydrogen.expressions import define_hydrogen_operational_expressions
 from .industry.expressions import define_industry_operational_expressions
 
 
-def define_operational_expressions(model, empire_config: EmpireConfiguration, result_file_path):
+def define_operational_expressions(model, empire_config: EmpireConfiguration, result_file_path, logger):
     """Define operational expressions in the correct dependency order.
     
     Order is critical:
@@ -40,7 +40,7 @@ def define_operational_expressions(model, empire_config: EmpireConfiguration, re
         define_industry_operational_expressions(model, empire_config.emission_cap_flag, empire_config.steel_CCS_capture_rate)
 
     # Step 3: Base operational expressions that use modified parameters
-    define_base_operational_expressions(model, empire_config)
+    define_base_operational_expressions(model, empire_config, logger)
 
 
 def derive_instance_stochastic_parameters(instance: ConcreteModel, empire_config: EmpireConfiguration, node_unscaled_yearly_demand_ser=None) -> None:

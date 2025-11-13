@@ -48,6 +48,7 @@ def define_base_operational_build_actions(
 def define_base_operational_expressions(
         model,
         empire_config: EmpireConfiguration,
+        logger,
         ):
     """Define operational expressions that may depend on BuildActions from modules."""
      
