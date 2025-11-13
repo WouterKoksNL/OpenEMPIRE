@@ -43,9 +43,9 @@ def define_operational_expressions(model, empire_config: EmpireConfiguration, re
     define_base_operational_expressions(model, empire_config)
 
 
-def derive_instance_stochastic_parameters(instance: ConcreteModel, node_unscaled_yearly_demand_ser=None) -> None:
+def derive_instance_stochastic_parameters(instance: ConcreteModel, empire_config: EmpireConfiguration, node_unscaled_yearly_demand_ser=None) -> None:
     """Set values for stochastic parameters based on raw inputs.
     E.g. compute sload from sloadRaw."""
     
-    derive_instance_base_stochastic_parameters(instance, node_unscaled_yearly_demand_ser)
+    derive_instance_base_stochastic_parameters(instance, empire_config, node_unscaled_yearly_demand_ser)
     

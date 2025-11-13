@@ -129,7 +129,7 @@ def define_base_operational_expressions(
 
 
 
-def derive_instance_base_stochastic_parameters(instance: ConcreteModel, node_unscaled_yearly_demand_ser=None) -> None:
+def derive_instance_base_stochastic_parameters(instance: ConcreteModel, empire_config, node_unscaled_yearly_demand_ser=None) -> None:
     """Set values for stochastic parameters based on raw inputs.
     E.g. compute sload from sloadRaw."""
     def _set_maxRegHydroGen(instance):
@@ -169,6 +169,26 @@ def derive_instance_base_stochastic_parameters(instance: ConcreteModel, node_uns
                 for w in instance.Scenario:
                     for h in instance.Operationalhour:
                         instance.sload[n,h,i,w] = instance.sloadRaw[i, w, n, h] * hourlyscale
+
+                for w in instance.Scenario:
+                    for h in instance.Operationalhour:
+                        instance.sload[n, h, i, w] = instance.sloadRaw[i, w, n, h] * hourlyscale
+
+                        if empire_config.heat_flag:
+                            instance.sload[n,h,i,w] -= instance.ElectricHeatShare[n]*instance.sloadRawTR[n,h,w,i]
+                        if empire_config.industry_flag:
+                            if n in instance.SteelProducers:
+                                instance.sload[n,h,i,w] -= value(sum(instance.steel_initialCapacity[n,p] * instance.steel_electricityConsumption[p,i] for p in instance.SteelPlants))
+                        if empire_config.industry_flag:
+                            if n in instance.CementProducers:
+                                instance.sload[n,h,i,w] -= value(sum(instance.cement_initialCapacity[n,p] * instance.cement_electricityConsumption[p,i] for p in instance.CementPlants))
+                        if empire_config.industry_flag:
+                            if n in instance.AmmoniaProducers:
+                                instance.sload[n,h,i,w] -= value(sum(instance.ammonia_initialCapacity[n,p] * instance.ammonia_electricityConsumption[p] for p in instance.AmmoniaPlants))
+                        if value(instance.sload[n,h,i,w]) < 0:
+                            print('Adjusted electricity load: ' + str(value(instance.sload[n,h,i,w])) + ', 10 MW for hour ' + str(h) + ' in period ' + str(i) + ' scenario ' + str(w) + ' in ' + str(n) + "\n")
+                            instance.sload[n,h,i,w] = 10
+                            
 
     
     _set_sload(instance, node_unscaled_yearly_demand_ser)
