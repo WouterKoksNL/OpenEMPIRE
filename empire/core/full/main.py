@@ -68,10 +68,9 @@ def run_empire(
         sample_file_path: Path | None = None,
         ) -> tuple[float, ConcreteModel] | None:
     
-    dataset_dir = paths.dataset_path
-    filtering_dict = {"Period": periods_active}
-    stochastic_input_dir = (dataset_dir / "Stochastic" if not out_of_sample_flag else sample_file_path)
     
+    stochastic_input_dir = (paths.dataset_path / "Stochastic" if not out_of_sample_flag else sample_file_path)
+
     windfarmNodes = None
     offshoreNodesList = []
 
@@ -111,7 +110,7 @@ def run_empire(
 
     define_operational_variables(model, empire_config)
     
-    define_operational_expressions(model, empire_config, paths.results_path)
+    define_operational_expressions(model, empire_config, paths.results_path, logger)
     define_investment_expressions(model, empire_config)
     define_shared_expressions(model, empire_config)
 
@@ -137,7 +136,7 @@ def run_empire(
 
     start = time.time()
     instance: ConcreteModel = model.create_instance(data) #, report_timing=True)
-    derive_instance_stochastic_parameters(instance)
+    derive_instance_stochastic_parameters(instance, empire_config)
     instance.dual = Suffix(direction=Suffix.IMPORT) #Make sure the dual value is collected into solver results (if solver supplies dual information)
 
     end = time.time()
@@ -164,7 +163,7 @@ def run_empire(
     return value(instance.Obj), instance
 
 
-def post_process(instance, paths, empire_config, opt, logger, out_of_sample_flag):
+def post_process(instance, paths: PathsConfig, empire_config: EmpireConfiguration, opt, logger, out_of_sample_flag: bool):
     if empire_config.pickle_instance_flag:
         pickle_instance(instance, paths.run_name, empire_config.use_temporary_directory, logger, empire_config.temporary_directory)
 
