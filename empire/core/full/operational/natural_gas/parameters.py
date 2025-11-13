@@ -23,7 +23,7 @@ def define_natural_gas_parameters(model):
     model.ng_pipelinePowerDemandPerTon = Param(default=0, mutable=True)
     
     # Terminal parameters
-    model.ng_terminalCost = Param(model.NaturalGasTerminalsOfNode, model.Period, model.GasScenario, default=99999, mutable=True)
+    model.ng_terminalCostStochastic = Param(model.NaturalGasTerminalsOfNode, model.Period, model.GasScenario, default=99999, mutable=True)
     model.ng_terminalCapacity = Param(model.NaturalGasTerminalsOfNode, model.Period, default=0, mutable=True)
     
     # Reserves
@@ -50,12 +50,9 @@ def load_natural_gas_parameter_data(data, dataset_dir, model, gas_stochasticity_
         'ng_terminalCapacity',
         'ng_reserves',
         'availableBioEnergy',
+        'ng_terminalCostStochastic'
     ]
-    if gas_stochasticity_flag:
-        param_list.append('ng_terminalCostStochastic')
-    else:
-        param_list.append('ng_terminalCost')
-    
+
 
     load_parameters(
         data, 
