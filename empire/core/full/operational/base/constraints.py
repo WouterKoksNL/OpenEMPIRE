@@ -13,16 +13,16 @@ def define_base_operational_constraints(model, empire_config: EmpireConfiguratio
         return model.electricFlow[n, h, i, w, gp] == 0
     model.FlowBalance = Constraint(model.Node, model.Operationalhour, model.Period, model.Scenario, model.GasScenario, rule=flow_balance_constraint_rule)
 
-
-    def genFuelUse_limit_rule(model, n, i, w, gp):
-        biomethane_use = 0
-        for g in model.Generator:
-            if (n,g) in model.GeneratorsOfNode:
-                if 'biomethane' in g.lower():
-                    biomethane_use += sum(model.seasScale[s] * model.genOperational[n,g,h,i,w,gp] / model.genEfficiency[g,i] * Constants.GJperMWh for (s,h) in model.HoursOfSeason)
-        return biomethane_use <= model.genMaxBiomethaneAvailability[n,i] * 1e3
-    model.genFuelUse_limit_rule = Constraint(model.Node, model.Period, model.Scenario, model.GasScenario, rule=genFuelUse_limit_rule)
-    
+    if False:
+        def genFuelUse_limit_rule(model, n, i, w, gp):
+            biomethane_use = 0
+            for g in model.Generator:
+                if (n,g) in model.GeneratorsOfNode:
+                    if 'biomethane' in g.lower():
+                        biomethane_use += sum(model.seasScale[s] * model.genOperational[n,g,h,i,w,gp] / model.genEfficiency[g,i] * Constants.GJperMWh for (s,h) in model.HoursOfSeason)
+            return biomethane_use <= model.genMaxBiomethaneAvailability[n,i] * 1e3
+        model.genFuelUse_limit_rule = Constraint(model.Node, model.Period, model.Scenario, model.GasScenario, rule=genFuelUse_limit_rule)
+        
     #################################################################
 
     def shed_limit_rule(model,n,h,i,w,gp):

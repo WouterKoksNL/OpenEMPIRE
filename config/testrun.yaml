@@ -24,7 +24,7 @@ regular_seasons: ['winter', 'spring']
 discount_rate: 0.05                                    # Rate used to discount future cash flows to present value
 wacc: 0.05                                             # Weighted average cost of capital
 optimization_solver: "Gurobi"                          # Mathematical solver used for optimization tasks
-fixed_sampling_key_flag: False                         # Specifies if a sampling key should be used to select scenarios
+fixed_sampling_key_flag: True                         # Specifies if a sampling key should be used to select scenarios
 fixed_csv_sample_flag: False                           # Specifies if explicitly supplied fixed scenarios should be used
 filter_make : False                                    #
 filter_use : False                                     #
