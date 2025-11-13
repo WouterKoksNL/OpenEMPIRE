@@ -14,8 +14,8 @@ from pyomo.environ import (
 )
 from .objective import define_objective
 from empire.core.full.operational.operational_input_params import OperationalInputParams
-from .out_of_sample_functions import set_out_of_sample_path
-from .results import run_operational_model, write_operational_results, write_pre_solve
+from .out_of_sample_functions import set_out_of_sample_path, run_operational_model
+from .results import write_operational_results, write_pre_solve
 from empire.results.main import write_results
 from .solver import set_solver, solve
 from .helpers import pickle_instance, log_problem_statistics, prepare_temp_dir, prepare_results_dir
@@ -50,6 +50,8 @@ from empire.core.full.operational import (
     define_operational_expressions,
     define_operational_constraints,
     derive_instance_stochastic_parameters,
+    load_operational_set_data,
+    define_operational_derived_sets,
 )
 
 
@@ -104,7 +106,6 @@ def run_empire(
         load_oos_investments(model, data, paths.results_path, empire_config)
         results_path = set_out_of_sample_path(paths.results_path, sample_file_path)
         logger.info("Out-of-sample results will be saved to: %s", results_path)
-
     else:
         define_investment_variables(model, empire_config)
 
