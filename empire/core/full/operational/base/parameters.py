@@ -111,6 +111,7 @@ def load_base_stochastic_parameter_data(
             param=getattr(model, "genCapAvailStochRaw"),
             filtering_dict={("Node", "Generator"): generators_of_node_df, **filtering_dict},
     )
+    node = pd.read_csv(dataset_dir / "Sets" / "Node.csv").values.T[0]
     stochastic_variables = [
             "sloadRaw",
             "maxRegHydroGenRaw",
@@ -120,8 +121,8 @@ def load_base_stochastic_parameter_data(
             full_path=stochastic_input_dir,
             param_name_list=stochastic_variables,
             model=model,
-            filtering_dict=filtering_dict
+            filtering_dict={"Node": node, **filtering_dict}
         )
     
-
-    return 
+    return
+    
