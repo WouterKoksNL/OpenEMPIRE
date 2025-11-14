@@ -63,6 +63,7 @@ def load_base_shared_set_data(data, dataset_dir, model, load_period=True, period
         "GeneratorsOfTechnology",
         "GeneratorsOfNode",
         "StoragesOfNode",
+        "TransmissionTypeOfDirectionalLink"
     ]
     # if north_sea_flag:
     #     input_sets.append("OffshoreNode")
