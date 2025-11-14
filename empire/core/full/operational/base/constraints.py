@@ -95,10 +95,10 @@ def define_base_operational_constraints(model, empire_config: EmpireConfiguratio
     model.hydro_gen_limit = Constraint(model.GeneratorsOfNode, model.Season, model.Period, model.Scenario, model.GasScenario, rule=hydro_gen_limit_rule)
 
     #################################################################
-
-    def hydro_node_limit_rule(model, n, i):
-        return sum(model.genOperational[n,g,h,i,w,gp]*model.seasScale[s]*model.sceProbab[w]*model.GasSceProbab[gp] for g in model.HydroGenerator if (n,g) in model.GeneratorsOfNode for (s,h) in model.HoursOfSeason for w in model.Scenario for gp in model.GasScenario) /1e3 - model.maxHydroNode[n] / 1e3 <= 0   #
-    model.hydro_node_limit = Constraint(model.Node, model.Period, rule=hydro_node_limit_rule)
+    if empire_config.include_hydro_node_limit_constraint_flag:
+        def hydro_node_limit_rule(model, n, i):
+            return sum(model.genOperational[n,g,h,i,w,gp]*model.seasScale[s]*model.sceProbab[w]*model.GasSceProbab[gp] for g in model.HydroGenerator if (n,g) in model.GeneratorsOfNode for (s,h) in model.HoursOfSeason for w in model.Scenario for gp in model.GasScenario) /1e3 - model.maxHydroNode[n] / 1e3 <= 0   #
+        model.hydro_node_limit = Constraint(model.Node, model.Period, rule=hydro_node_limit_rule)
 
     #################################################################
 
