@@ -9,7 +9,7 @@ def define_heat_investment_expressions(model):
         for r in model.Converter:
             for i in model.Period:
                 costperyear=(model.WACC/(1-((1+model.WACC)**(1-model.ConverterLifetime[r]))))*model.ConverterCapitalCost[r,i]+model.ConverterFixedOMCost[r,i]
-                costperperiod=costperyear*1000*(1-(1+model.discount_rate)**-(min(value((len(model.period_active)-i+1)*model.leap_years_investment), value(model.ConverterLifetime[r]))))/(1-(1/(1+model.discount_rate)))
+                costperperiod=costperyear*1000*(1-(1+model.discount_rate)**-(min(value((len(model.Period)-i+1)*model.leap_years_investment), value(model.ConverterLifetime[r]))))/(1-(1/(1+model.discount_rate)))
                 model.ConverterInvCost[r,i]=costperperiod
 
     model.build_InvCostConverter = BuildAction(rule=prepInvCostConverter_rule)
