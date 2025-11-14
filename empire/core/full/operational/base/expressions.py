@@ -157,7 +157,7 @@ def derive_instance_base_stochastic_parameters(instance: ConcreteModel, empire_c
                     node_unscaled_yearly_demand = value(sum(
                         instance.sceProbab[w] * instance.seasScale[s] * instance.sloadRaw[i, w, n, h]
                         for (s, h) in instance.HoursOfSeason
-                        # if h < cutoff  # adjust if you want peak hours included
+                        if h < cutoff  # adjust if you want peak hours included
                         for w in instance.Scenario
                     ))
                 elif isinstance(node_unscaled_yearly_demand_ser, pd.Series):
