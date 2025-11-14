@@ -22,7 +22,7 @@ def define_operational_input_params(empire_config: EmpireConfiguration):
     FirstHoursOfPeakSeason = [empire_config.length_regular_season * empire_config.n_reg_season + empire_config.length_peak_season * i + 1 for i in range(empire_config.n_peak_seasons)]
     
     scenarios = ["scenario" + str(i + 1) for i in range(empire_config.number_of_scenarios)]
-    gas_scenarios = [1, 2]
+    gas_scenarios = [1]
     peak_seasons = ["peak" + str(i + 1) for i in range(empire_config.n_peak_seasons)]
     Season = empire_config.regular_seasons + peak_seasons
     Operationalhour = [i + 1 for i in range(FirstHoursOfPeakSeason[-1] + empire_config.length_peak_season - 1)]
