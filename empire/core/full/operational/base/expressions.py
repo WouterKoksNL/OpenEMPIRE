@@ -127,7 +127,7 @@ def define_base_operational_expressions(
 
 
     def operational_cost_scenario_rule(model, i, w, gp):
-        returnSum = sum(model.operationalDiscountrate*model.seasScale[s]*model.genMargCost[g,i]*model.genOperational[n,g,h,i,w,gp] for (n,g) in model.GeneratorsOfNode for (s,h) in model.HoursOfSeason) + \
+        returnSum = sum(model.operationalDiscountrate*model.sceProbab[w]*model.GasSceProbab[gp]*model.seasScale[s]*model.genMargCost[g,i]*model.genOperational[n,g,h,i,w,gp] for (n,g) in model.GeneratorsOfNode for (s,h) in model.HoursOfSeason) + \
                      model.shedcomponent[i,w,gp] 
         if empire_config.natural_gas_flag:
             returnSum += model.ng_import_cost[i,w,gp]
