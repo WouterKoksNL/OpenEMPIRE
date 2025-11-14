@@ -181,12 +181,12 @@ def load_dict_into_dataportal(data: DataPortal, param: Param, data_dict: dict[tu
 def load_set_directly(data: DataPortal, model_set: Set, value: list | int | float | str):
     """Create a temporary .tab file with the specified period and load it into the DataPortal."""
     if isinstance(value, (int, float, str)):
-        val = [value]
+        lst = [value]
     elif isinstance(value, list):
-        val = value
+        lst = value
     else:
         raise ValueError(f"Unsupported type for value: {type(value)}")
-    df = pd.Series(val, name="value").to_frame()
+    df = pd.Series(lst, name="value").to_frame()
     with tempfile.NamedTemporaryFile(mode="w", suffix=".tab", delete=False) as tmpfile:
         df.to_csv(tmpfile.name, sep="\t", index=False, header=True)
         tmpname = tmpfile.name
