@@ -31,7 +31,7 @@ def define_base_investment_parameters(model):
     model.transmissionInvCost = Param(model.BidirectionalArc, model.Period, default=3000000, mutable=True)
     model.transmissionLength = Param(model.BidirectionalArc, mutable=True)
     model.transmissionInitCap = Param(model.BidirectionalArc, model.Period, default=0.0, mutable=True)
-    model.transmissionMaxBuiltCap = Param(model.BidirectionalArc, model.Period, default=10000.0, mutable=True)
+    model.transmissionMaxBuiltCap = Param(model.BidirectionalArc, model.Period, default=500000.0, mutable=True)
     model.transmissionMaxInstalledCapRaw = Param(model.BidirectionalArc, model.Period, default=0.0)
     model.transmissionMaxInstalledCap = Param(model.BidirectionalArc, model.Period, default=0.0, mutable=True)
     model.transmissionLifetime = Param(model.BidirectionalArc, default=40.0, mutable=True)
