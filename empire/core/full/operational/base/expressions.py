@@ -52,27 +52,48 @@ def define_base_operational_expressions(
         ):
     """Define operational expressions that may depend on BuildActions from modules."""
      
+    # def prepOperationalCostGen_rule(model):
+    #     #Build generator short term marginal costs
+        
+    #     ng_gens = (model.NaturalGasGenerators if hasattr(model, 'NaturalGasGenerators') else [])
+    #     h2_gens = (model.HydrogenGenerators if hasattr(model, 'HydrogenGenerators') else [])
+    #     non_ng_h2_gens = [g for g in model.Generator if g not in ng_gens and g not in h2_gens]
+
+    #     for g in model.Generator:
+    #         for i in model.Period:
+    #             if not empire_config.emission_cap_flag:
+    #                 costperenergyunit=(Constants.GJperMWh/model.genEfficiency[g,i])*(model.genCO2TypeFactor[g]*model.CO2price[i])+ \
+    #                                   model.genVariableOMCost[g]
+    #             else:
+    #                 costperenergyunit = model.genVariableOMCost[g]
+                    
+    #             if g in non_ng_h2_gens:
+    #                     costperenergyunit += (Constants.GJperMWh/model.genEfficiency[g,i])*(model.genFuelCost[g,i])
+    #             model.genMargCost[g,i] = costperenergyunit
+
+    # model.build_OperationalCostGen = BuildAction(rule=prepOperationalCostGen_rule)
+    
     def prepOperationalCostGen_rule(model):
         #Build generator short term marginal costs
-        
-        ng_gens = (model.NaturalGasGenerators if hasattr(model, 'NaturalGasGenerators') else [])
-        h2_gens = (model.HydrogenGenerators if hasattr(model, 'HydrogenGenerators') else [])
-        non_ng_h2_gens = [g for g in model.Generator if g not in ng_gens and g not in h2_gens]
 
         for g in model.Generator:
             for i in model.Period:
-                if not empire_config.emission_cap_flag:
-                    costperenergyunit=(Constants.GJperMWh/model.genEfficiency[g,i])*(model.genCO2TypeFactor[g]*model.CO2price[i])+ \
-                                      model.genVariableOMCost[g]
+                if ('CCS',g) in model.GeneratorsOfTechnology:
+                    costperenergyunit=(3.6/model.genEfficiency[g,i])*(model.genFuelCost[g,i]+(1-0.9)*model.genCO2TypeFactor[g]*model.CO2price[i])+ \
+                    (3.6/model.genEfficiency[g,i])*(0.9*model.genCO2TypeFactor[g]*14.0797034)+ \
+                    model.genVariableOMCost[g]
                 else:
-                    costperenergyunit = model.genVariableOMCost[g]
-                    
-                if g in non_ng_h2_gens:
-                        costperenergyunit += (Constants.GJperMWh/model.genEfficiency[g,i])*(model.genFuelCost[g,i])
-                model.genMargCost[g,i] = costperenergyunit
+                    costperenergyunit=(3.6/model.genEfficiency[g,i])*(model.genFuelCost[g,i]+model.genCO2TypeFactor[g]*model.CO2price[i])+ \
+                    model.genVariableOMCost[g]
+                model.genMargCost[g,i]=costperenergyunit
 
     model.build_OperationalCostGen = BuildAction(rule=prepOperationalCostGen_rule)
-    
+
+
+
+
+
+
     def shed_component_rule(model,i,w, gp):
         return sum(model.operationalDiscountrate*model.seasScale[s]*model.nodeLostLoadCost[n,i]*model.loadShed[n,h,i,w,gp] for n in model.Node for (s,h) in model.HoursOfSeason)
     model.shedcomponent = Expression(model.Period, model.Scenario, model.GasScenario, rule=shed_component_rule)
